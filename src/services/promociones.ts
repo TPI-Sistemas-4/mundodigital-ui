@@ -14,6 +14,7 @@ export interface Promocion {
   fechaHasta: string
   activa: boolean
   detalle?: DetallePromocion[]
+  esGeneral?: boolean
 }
 
 export type NuevaPromocion = Omit<Promocion, 'idPromocion'>
@@ -61,13 +62,17 @@ let nextId = 4
 
 export const promocionesService = {
   async getAll(): Promise<Promocion[]> {
-    try {
-      const { data } = await api.get<Promocion[]>('/promociones')
-      return data
-    } catch(error) {
-      console.error(error)
-      return mockStore
-    }
+    const { data } = await api.get<any[]>('/promociones')
+    return data.map((p) => ({
+      idPromocion: p.idpromocion,
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+      fechaDesde: p.fechadesde,
+      fechaHasta: p.fechahasta,
+      activa: p.activa,
+      esGeneral: p.esgeneral,
+      detalle: p.detallepromocion ?? [],
+    }))
   },
 
   async getById(id: number): Promise<Promocion> {
@@ -81,28 +86,15 @@ export const promocionesService = {
     }
   },
 
-  async create(payload: NuevaPromocion): Promise<Promocion> {
-    try {
-      const { data } = await api.post<Promocion>('/promociones', payload)
-      return data
-    } catch {
-      const nueva: Promocion = { ...payload, idPromocion: nextId++ }
-      mockStore = [...mockStore, nueva]
-      return nueva
-    }
-  },
+async create(payload: NuevaPromocion): Promise<Promocion> {
+  const { data } = await api.post<Promocion>('/promociones', payload)
+  return data
+},
 
-  async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
-    try {
-      const { data } = await api.put<Promocion>(`/promociones/${id}`, payload)
-      return data
-    } catch {
-      mockStore = mockStore.map((p) =>
-        p.idPromocion === id ? { ...p, ...payload } : p
-      )
-      return mockStore.find((p) => p.idPromocion === id)!
-    }
-  },
+async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
+  const { data } = await api.put<Promocion>(`/promociones/${id}`, payload)
+  return data
+},
 
   async remove(id: number): Promise<void> {
     try {
