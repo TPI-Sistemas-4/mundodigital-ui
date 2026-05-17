@@ -4,7 +4,7 @@ export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001',
   headers: {
     'Content-Type': 'application/json',
-    'x-api-key': import.meta.env.BACKEND_API_KEY,
+    'x-api-key': import.meta.env.VITE_API_KEY,
   },
   timeout: 10000,
 })
