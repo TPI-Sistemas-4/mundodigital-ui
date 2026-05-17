@@ -13,6 +13,7 @@ export default function App() {
         <Routes>
           <Route path="login" element={<LoginPage />} />
             <Route element={<Layout />}>
+              <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="promociones" element={<PrivateRoute><PromocionesPage /></PrivateRoute>} />
               <Route path="cupones"     element={<PrivateRoute><CuponesPage /></PrivateRoute>} />
               <Route path="puntos"      element={<PrivateRoute><PuntosPage /></PrivateRoute>} />

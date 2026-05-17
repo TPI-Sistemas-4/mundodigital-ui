@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../services/auth'
 import { useToast } from '../components/Toast'
@@ -24,6 +24,12 @@ export function LoginPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/promociones', { replace: true })
+    }
+  }, [navigate])
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f10' }}>
