@@ -11,7 +11,7 @@ const EMPTY: NuevaPromocion = {
   descripcion: '',
   fechaDesde: '',
   fechaHasta: '',
-  activa: true,
+  activa: false,
   detalle: [],
   esGeneral: false,
 }
@@ -108,8 +108,8 @@ export function PromocionesPage() {
       fechaHasta: form.fechaHasta,
       activa: form.activa,
       detalles: form.esGeneral
-      ? [{ descuentoPorcentaje: nuevoDetalle.descuentoPorcentaje }]
-      : (form.detalle ?? []).map((d) => ({
+        ? [{ descuentoPorcentaje: nuevoDetalle.descuentoPorcentaje }]
+        : (form.detalle ?? []).map((d) => ({
           idProducto: d.idProducto,
           descuentoPorcentaje: d.descuentoPorcentaje,
         })),
@@ -211,7 +211,19 @@ export function PromocionesPage() {
                   <td style={{ padding: '14px 16px' }}><Badge activa={p.activa} /></td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <Btn variant="ghost" onClick={() => openEdit(p)} style={{ padding: '5px 12px', fontSize: 12 }}>Editar</Btn>
+                      <Btn
+                          variant="ghost"
+                          disabled={p.activa}
+                          onClick={() => openEdit(p)}
+                          style={{
+                            padding: '5px 12px',
+                            fontSize: 12,
+                            opacity: p.activa ? 0.5 : 1,
+                            cursor: p.activa ? 'not-allowed' : 'pointer'
+                          }}
+                        >
+                          Editar
+                      </Btn>
                       <Btn variant="ghost" onClick={() => setDeleteId(p.idPromocion)} style={{ padding: '5px 12px', fontSize: 12, color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}>Eliminar</Btn>
                     </div>
                   </td>
