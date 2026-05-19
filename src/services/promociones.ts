@@ -14,6 +14,7 @@ export interface Promocion {
   fechaHasta: string
   activa: boolean
   eliminada?: boolean
+  esAplicable?: boolean
   detalle?: DetallePromocion[]
   esGeneral?: boolean
 }
@@ -71,20 +72,38 @@ export const promocionesService = {
       fechaDesde: p.fechadesde,
       fechaHasta: p.fechahasta,
       activa: p.activa,
-      esGeneral: p.esgeneral,
+      esAplicable: p.esAplicable,
+      esGeneral: p.esGeneral,
       detalle: p.detallepromocion ?? [],
     }))
   },
 
   async getById(id: number): Promise<Promocion> {
     try {
-      const { data } = await api.get<Promocion>(`/promociones/${id}`)
-      return data
+      const { data } = await api.get<any>(`/promociones/${id}`)
+      return {
+        idPromocion: data.idpromocion,
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        fechaDesde: data.fechadesde,
+        fechaHasta: data.fechahasta,
+        activa: data.activa,
+        esAplicable: data.esAplicable,
+        esGeneral: data.esgeneral,
+        detalle: data.detallepromocion ?? [],
+      }
     } catch {
       const p = mockStore.find((x) => x.idPromocion === id)
-      if (!p) throw new Error('Promoción no encontrada')
+      if (!p) {
+        throw new Error('Promoción no encontrada')
+      }
       return p
     }
+  },
+
+  async buscarPorNombre(nombre: string): Promise<Promocion[]> {
+    const { data } = await api.get(`/promociones/buscar/${nombre}`)
+    return data
   },
 
   async create(payload: NuevaPromocion): Promise<Promocion> {
@@ -121,7 +140,7 @@ export const promocionesService = {
     } catch {
       return mockStore.filter((p) => {
         const now = new Date(f)
-        return  !p.eliminada && p.activa && new Date(p.fechaDesde) <= now && now <= new Date(p.fechaHasta)
+        return !p.eliminada && p.activa && new Date(p.fechaDesde) <= now && now <= new Date(p.fechaHasta)
       })
     }
   },
