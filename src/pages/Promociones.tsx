@@ -50,6 +50,7 @@ export function PromocionesPage() {
   const { toast } = useToast()
   const [data, setData] = useState<Promocion[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Promocion | null>(null)
   const [form, setForm] = useState<NuevaPromocion>(EMPTY)
@@ -58,8 +59,13 @@ export function PromocionesPage() {
 
   const load = async () => {
     setLoading(true)
+
     try {
-      setData(await promocionesService.getAll())
+      if (search.trim()) {
+        setData(await promocionesService.buscarPorNombre(search))
+      } else {
+        setData(await promocionesService.getAll())
+      }
     } catch (e: any) {
       toast(e.message, 'error')
     } finally {
@@ -67,7 +73,7 @@ export function PromocionesPage() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [search])
 
   const [nuevoDetalle, setNuevoDetalle] = useState({
     idProducto: 0,
@@ -92,36 +98,80 @@ export function PromocionesPage() {
   const openNew = () => { setEditTarget(null); setForm(EMPTY); setFormOpen(true) }
   const openEdit = (p: Promocion) => {
     setEditTarget(p)
-    setForm({ nombre: p.nombre, descripcion: p.descripcion, fechaDesde: p.fechaDesde.slice(0, 16), fechaHasta: p.fechaHasta.slice(0, 16), activa: p.activa, detalle: p.detalle ?? [] })
+    setForm({
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+      fechaDesde: p.fechaDesde.split('T')[0],
+      fechaHasta: p.fechaHasta.split('T')[0],
+      activa: p.activa,
+      esGeneral: p.esGeneral,
+      detalle: p.detalle ?? []
+    })
     setFormOpen(true)
   }
 
   const handleSave = async () => {
-    if (!form.nombre || !form.fechaDesde || !form.fechaHasta) {
-      toast('Completá los campos obligatorios', 'error'); return
-    }
-    setSaving(true)
-    const payload = {
-      nombre: form.nombre,
-      descripcion: form.descripcion,
-      fechaDesde: form.fechaDesde,
-      fechaHasta: form.fechaHasta,
-      activa: form.activa,
-      detalles: form.esGeneral
-        ? [{ descuentoPorcentaje: nuevoDetalle.descuentoPorcentaje }]
-        : (form.detalle ?? []).map((d) => ({
-          idProducto: d.idProducto,
-          descuentoPorcentaje: d.descuentoPorcentaje,
-        })),
-    }
 
-    if (!payload.detalles.length) {
-      toast('Agregá al menos un producto a la promoción', 'error')
+    if (!form.nombre || !form.fechaDesde || !form.fechaHasta) {
+      toast('Completá los campos obligatorios', 'error')
       return
     }
+
+    setSaving(true)
     try {
+      // Desactivar promocion Activa
+      if (
+        editTarget &&
+        editTarget.activa &&
+        form.activa === false
+      ) {
+
+        await promocionesService.update(
+          editTarget.idPromocion,
+          { activa: false }
+        )
+        toast('Promoción desactivada', 'success')
+        setFormOpen(false)
+        load()
+        return
+      }
+
+      // Payload normal
+      const payload = {
+        nombre: form.nombre,
+        descripcion: form.descripcion,
+        fechaDesde: form.fechaDesde,
+        fechaHasta: form.fechaHasta,
+        activa: form.activa,
+        esGeneral: form.esGeneral,
+        detalles: form.esGeneral
+          ? [
+            {
+              idProducto: null,
+              descuentoPorcentaje:
+                nuevoDetalle.descuentoPorcentaje,
+            },
+          ]
+          : (form.detalle ?? []).map((d) => ({
+            idProducto: d.idProducto,
+            descuentoPorcentaje:
+              d.descuentoPorcentaje,
+          })),
+      }
+
+      if (!payload.detalles.length) {
+        toast(
+          'Agregá al menos un producto a la promoción',
+          'error'
+        )
+        return
+      }
+
       if (editTarget) {
-        await promocionesService.update(editTarget.idPromocion, payload)
+        await promocionesService.update(
+          editTarget.idPromocion,
+          payload
+        )
         toast('Promoción actualizada', 'success')
       } else {
         await promocionesService.create(payload)
@@ -168,6 +218,15 @@ export function PromocionesPage() {
         <Btn onClick={openNew}>+ Nueva promoción</Btn>
       </div>
 
+
+      <div style={{ marginBottom: 16 }}>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar promoción..."
+          style={inputStyle}
+        />
+      </div>
       {/* Table */}
       <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
@@ -208,21 +267,25 @@ export function PromocionesPage() {
                       {p.esGeneral ? 'General' : 'Por producto'}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 16px' }}><Badge activa={p.activa} /></td>
+                  <td style={{ padding: '14px 16px' }}><Badge activa={p.activa} />
+                    <div style={{ marginTop: 4, fontSize: 11, color: p.esAplicable ? '#4ade80' : '#71717a' }}>
+                      {p.esAplicable ? 'Aplicable hoy' : 'No aplicable'}
+                    </div>
+                  </td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <Btn
-                          variant="ghost"
-                          disabled={p.activa}
-                          onClick={() => openEdit(p)}
-                          style={{
-                            padding: '5px 12px',
-                            fontSize: 12,
-                            opacity: p.activa ? 0.5 : 1,
-                            cursor: p.activa ? 'not-allowed' : 'pointer'
-                          }}
-                        >
-                          Editar
+                        variant="ghost"
+                        //disabled={p.activa}
+                        onClick={() => openEdit(p)}
+                        style={{
+                          padding: '5px 12px',
+                          fontSize: 12,
+                          // opacity: p.activa ? 0.5 : 1,
+                          // cursor: p.activa ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        Editar
                       </Btn>
                       <Btn variant="ghost" onClick={() => setDeleteId(p.idPromocion)} style={{ padding: '5px 12px', fontSize: 12, color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}>Eliminar</Btn>
                     </div>
@@ -247,7 +310,14 @@ export function PromocionesPage() {
             <Field label="Fecha desde *">
               <DatePicker
                 selected={form.fechaDesde ? new Date(form.fechaDesde) : null}
-                onChange={(date: Date | null) => setForm((f) => ({ ...f, fechaDesde: date ? date.toISOString().split('T')[0] : '' }))}
+                onChange={(date: Date | null) =>
+                  setForm((f) => ({
+                    ...f,
+                    fechaDesde: date
+                      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                      : '',
+                  }))
+                }
                 dateFormat="dd/MM/yyyy"
                 locale="es"
                 placeholderText="dd/mm/aaaa"
@@ -258,7 +328,14 @@ export function PromocionesPage() {
             <Field label="Fecha hasta *">
               <DatePicker
                 selected={form.fechaHasta ? new Date(form.fechaHasta) : null}
-                onChange={(date: Date | null) => setForm((f) => ({ ...f, fechaHasta: date ? date.toISOString().split('T')[0] : '' }))}
+                onChange={(date: Date | null) =>
+                  setForm((f) => ({
+                    ...f,
+                    fechaHasta: date
+                      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                      : '',
+                  }))
+                }
                 dateFormat="dd/MM/yyyy"
                 locale="es"
                 placeholderText="dd/mm/aaaa"
@@ -344,8 +421,8 @@ export function PromocionesPage() {
             {/* Lista productos solo si no es general */}
             {!form.esGeneral && (form.detalle ?? []).length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {(form.detalle ?? []).map((d) => (
-                  <div key={d.idProducto} style={{
+                {(form.detalle ?? []).map((d, index) => (
+                  <div key={`${d.idProducto}-${index}`} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '8px 12px', background: '#0f0f10', borderRadius: 8,
                     border: '1px solid #2e2e35'
