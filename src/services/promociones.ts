@@ -13,6 +13,7 @@ export interface Promocion {
   fechaDesde: string
   fechaHasta: string
   activa: boolean
+  eliminada?: boolean
   detalle?: DetallePromocion[]
   esGeneral?: boolean
 }
@@ -86,21 +87,29 @@ export const promocionesService = {
     }
   },
 
-async create(payload: NuevaPromocion): Promise<Promocion> {
-  const { data } = await api.post<Promocion>('/promociones', payload)
-  return data
-},
+  async create(payload: NuevaPromocion): Promise<Promocion> {
+    const { data } = await api.post<Promocion>('/promociones', payload)
+    return data
+  },
 
-async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
-  const { data } = await api.put<Promocion>(`/promociones/${id}`, payload)
-  return data
-},
+  async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
+    const { data } = await api.put<Promocion>(`/promociones/${id}`, payload)
+    return data
+  },
 
   async remove(id: number): Promise<void> {
     try {
       await api.delete(`/promociones/${id}`)
     } catch {
-      mockStore = mockStore.filter((p) => p.idPromocion !== id)
+      mockStore = mockStore.map((p) =>
+        p.idPromocion === id
+          ? {
+            ...p,
+            eliminada: true,
+            activa: false,
+          }
+          : p
+      )
     }
   },
 
@@ -112,7 +121,7 @@ async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
     } catch {
       return mockStore.filter((p) => {
         const now = new Date(f)
-        return p.activa && new Date(p.fechaDesde) <= now && now <= new Date(p.fechaHasta)
+        return  !p.eliminada && p.activa && new Date(p.fechaDesde) <= now && now <= new Date(p.fechaHasta)
       })
     }
   },
