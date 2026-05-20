@@ -14,6 +14,7 @@ const EMPTY: NuevaPromocion = {
   activa: false,
   detalle: [],
   esGeneral: false,
+  updatedat: '',
 }
 
 interface DetalleForm {
@@ -56,6 +57,11 @@ export function PromocionesPage() {
   const [form, setForm] = useState<NuevaPromocion>(EMPTY)
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
+  type SortKey = 'updatedat' | 'activa' | 'fechadesde' | 'fechahasta' | 'duracion' |'nombre' | 'descripcion' | 'id'
+  type SortDir = 'asc' | 'desc'
+
+  const [sortKey, setSortKey] = useState<SortKey>('updatedat')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
   const load = async () => {
     setLoading(true)
@@ -76,19 +82,83 @@ export function PromocionesPage() {
   useEffect(() => { load() }, [search])
 
   const [nuevoDetalle, setNuevoDetalle] = useState({
-    idProducto: 0,
+    idproducto: 0,
     nombreProducto: '',
     descuentoPorcentaje: 10,
   })
 
-  const [productos, setProductos] = useState<{ idProducto: number; nombre: string }[]>([])
+  const [productos, setProductos] = useState<{ idproducto: number; nombre: string }[]>([])
   const [selectedProducto, setSelectedProducto] = useState('')
+
+  const sorted = [...data].sort((a, b) => {
+  let valA: any, valB: any
+
+    switch (sortKey) {
+      case 'updatedat':
+        valA = new Date(a.updatedat ?? 0).getTime()
+        valB = new Date(b.updatedat ?? 0).getTime()
+        break
+      case 'activa':
+        valA = a.activa ? 1 : 0
+        valB = b.activa ? 1 : 0
+        break
+      case 'fechadesde':
+        valA = new Date(a.fechaDesde).getTime()
+        valB = new Date(b.fechaDesde).getTime()
+        break
+      case 'fechahasta':
+        valA = new Date(a.fechaHasta).getTime()
+        valB = new Date(b.fechaHasta).getTime()
+        break
+      case 'duracion':
+        valA = new Date(a.fechaHasta).getTime() - new Date(a.fechaDesde).getTime()
+        valB = new Date(b.fechaHasta).getTime() - new Date(b.fechaDesde).getTime()
+        break
+      case 'nombre':
+        valA = a.nombre?.toLowerCase()
+        valB = b.nombre?.toLowerCase()
+        break
+      case 'descripcion':
+        valA = a.descripcion?.toLowerCase() ?? ''
+        valB = b.descripcion?.toLowerCase() ?? ''
+        break
+      case 'id':
+        valA = a.idPromocion
+        valB = b.idPromocion
+        break
+    }
+
+    if (valA < valB) return sortDir === 'asc' ? -1 : 1
+    if (valA > valB) return sortDir === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const headers: { label: string; key: SortKey | null }[] = [
+    { label: 'ID', key: 'id' },
+    { label: 'Nombre', key: 'nombre' },
+    { label: 'Descripción', key: 'descripcion' },
+    { label: 'Desde', key: 'fechadesde' },
+    { label: 'Hasta', key: 'fechahasta' },
+    { label: 'Tipo', key: null },
+    { label: 'Estado', key: 'activa' },
+    { label: '', key: null },
+  ]
+
+  const handleSort = (key: SortKey | null) => {
+    if (!key) return
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
 
   useEffect(() => {
     api.get('/productos')
       .then(({ data }) => {
         setProductos(data.map((p: any) => ({
-          idProducto: p.idproducto,
+          idproducto: p.idproducto,
           nombre: p.nombre,
         })))
       })
@@ -96,7 +166,17 @@ export function PromocionesPage() {
   }, []) // array vacío = solo al montar
 
   const openNew = () => { setEditTarget(null); setForm(EMPTY); setFormOpen(true) }
+
   const openEdit = (p: Promocion) => {
+    console.log('detalle raw:', p.detalle)
+    // si es general, precargás el slider con el descuento existente
+    if (p.esGeneral && p.detalle?.[0]) {
+      const d = p.detalle[0] as any
+      setNuevoDetalle((prev) => ({
+        ...prev,
+        descuentoPorcentaje: d.descuentoporcentaje ?? d.descuentoPorcentaje ?? 10,
+      }))
+    }
     setEditTarget(p)
     setForm({
       nombre: p.nombre,
@@ -105,7 +185,12 @@ export function PromocionesPage() {
       fechaHasta: p.fechaHasta.split('T')[0],
       activa: p.activa,
       esGeneral: p.esGeneral,
-      detalle: p.detalle ?? []
+      updatedat: p.updatedat,
+      detalle: (p.detalle ?? []).map((d: any) => ({
+        idProducto: d.idproducto ?? d.idProducto,
+        nombreProducto: d.productos?.nombre ?? d.nombreProducto ?? '—',
+        descuentoPorcentaje: d.descuentoporcentaje ?? d.descuentoPorcentaje,
+      })),
     })
     setFormOpen(true)
   }
@@ -144,16 +229,17 @@ export function PromocionesPage() {
         fechaHasta: form.fechaHasta,
         activa: form.activa,
         esGeneral: form.esGeneral,
+        updatedat: form.updatedat,
         detalles: form.esGeneral
           ? [
             {
-              idProducto: null,
+              idproducto: null,
               descuentoPorcentaje:
                 nuevoDetalle.descuentoPorcentaje,
             },
           ]
           : (form.detalle ?? []).map((d) => ({
-            idProducto: d.idProducto,
+            idproducto: d.idProducto,
             descuentoPorcentaje:
               d.descuentoPorcentaje,
           })),
@@ -239,13 +325,32 @@ export function PromocionesPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #2e2e35' }}>
-                {['ID', 'Nombre', 'Descripción', 'Desde', 'Hasta', 'Tipo', 'Estado', ''].map((h) => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, color: '#71717a', fontWeight: 500, fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap' }}>{h}</th>
+                {headers.map((h) => (
+                  <th
+                    key={h.label}
+                    onClick={() => handleSort(h.key)}
+                    style={{
+                      padding: '12px 16px', textAlign: 'left', fontSize: 11,
+                      color: sortKey === h.key ? '#e8ff47' : '#71717a',
+                      fontWeight: 500, fontFamily: 'DM Mono, monospace',
+                      whiteSpace: 'nowrap',
+                      cursor: h.key ? 'pointer' : 'default',
+                      userSelect: 'none',
+                    }}
+                  >
+                    {h.label}
+                    {h.key && sortKey === h.key && (
+                      <span style={{ marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                    {h.key && sortKey !== h.key && (
+                      <span style={{ marginLeft: 4, opacity: 0.3 }}>↕</span>
+                    )}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {data.map((p, i) => (
+              {sorted.map((p, i) => (
                 <tr key={p.idPromocion}
                   style={{ borderBottom: i < data.length - 1 ? '1px solid #2e2e35' : 'none', transition: 'background 0.1s' }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = '#232328')}
@@ -391,7 +496,7 @@ export function PromocionesPage() {
                     value={selectedProducto}
                     onChange={(e) => {
                       const id = Number(e.target.value)
-                      const p = productos.find((p) => p.idProducto === id)
+                      const p = productos.find((p) => p.idproducto === id)
                       if (!p) return
                       if (form.detalle?.some((d) => d.idProducto === id)) return
                       setForm((f) => ({
@@ -408,9 +513,9 @@ export function PromocionesPage() {
                   >
                     <option value="" disabled>Seleccionar producto...</option>
                     {productos
-                      .filter((p) => !form.detalle?.some((d) => d.idProducto === p.idProducto))
+                      .filter((p) => !form.detalle?.some((d) => d.idProducto === p.idproducto))
                       .map((p) => (
-                        <option key={p.idProducto} value={p.idProducto}>#{p.idProducto} — {p.nombre}</option>
+                        <option key={p.idproducto} value={p.idproducto}>#{p.idproducto} — {p.nombre}</option>
                       ))
                     }
                   </select>

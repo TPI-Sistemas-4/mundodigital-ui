@@ -7,6 +7,7 @@ export interface DetallePromocion {
 }
 
 export interface Promocion {
+  updatedat: string
   idPromocion: number
   nombre: string
   descripcion: string
@@ -34,6 +35,7 @@ const MOCK: Promocion[] = [
       { idProducto: 1, nombreProducto: 'Auriculares BT Pro', descuentoPorcentaje: 20 },
       { idProducto: 2, nombreProducto: 'Monitor 27"', descuentoPorcentaje: 15 },
     ],
+    updatedat: '2026-10-01T12:00:00',
   },
   {
     idPromocion: 2,
@@ -45,6 +47,7 @@ const MOCK: Promocion[] = [
     detalle: [
       { idProducto: 3, nombreProducto: 'Teclado Mecánico', descuentoPorcentaje: 25 },
     ],
+    updatedat: '2026-10-01T12:00:00',
   },
   {
     idPromocion: 3,
@@ -54,6 +57,7 @@ const MOCK: Promocion[] = [
     fechaHasta: '2026-06-15T23:59:59',
     activa: false,
     detalle: [],
+    updatedat: '2026-05-20T09:30:00',
   },
 ]
 
@@ -75,6 +79,7 @@ export const promocionesService = {
       esAplicable: p.esAplicable,
       esGeneral: p.esGeneral,
       detalle: p.detallepromocion ?? [],
+      updatedat: p.updatedat,
     }))
   },
 
@@ -91,6 +96,7 @@ export const promocionesService = {
         esAplicable: data.esAplicable,
         esGeneral: data.esgeneral,
         detalle: data.detallepromocion ?? [],
+        updatedat: data.updatedat,
       }
     } catch {
       const p = mockStore.find((x) => x.idPromocion === id)
