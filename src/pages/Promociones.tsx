@@ -396,7 +396,10 @@ export function PromocionesPage() {
                       >
                         Editar
                       </Btn>
-                      <Btn variant="ghost" onClick={() => setDeleteId(p.idPromocion)} style={{ padding: '5px 12px', fontSize: 12, color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}>Eliminar</Btn>
+                      <Btn variant="ghost" onClick={() => {
+                        if (p.activa) { toast('No se puede eliminar una promoción activa. Desactivala primero.', 'error'); return }
+                        setDeleteId(p.idPromocion)
+                      }} style={{ padding: '5px 12px', fontSize: 12, color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}>Eliminar</Btn>
                     </div>
                   </td>
                 </tr>
