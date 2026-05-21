@@ -7,12 +7,15 @@ export interface DetallePromocion {
 }
 
 export interface Promocion {
+  updatedat: string
   idPromocion: number
   nombre: string
   descripcion: string
   fechaDesde: string
   fechaHasta: string
   activa: boolean
+  eliminada?: boolean
+  esAplicable?: boolean
   detalle?: DetallePromocion[]
   esGeneral?: boolean
 }
@@ -32,6 +35,7 @@ const MOCK: Promocion[] = [
       { idProducto: 1, nombreProducto: 'Auriculares BT Pro', descuentoPorcentaje: 20 },
       { idProducto: 2, nombreProducto: 'Monitor 27"', descuentoPorcentaje: 15 },
     ],
+    updatedat: '2026-10-01T12:00:00',
   },
   {
     idPromocion: 2,
@@ -43,6 +47,7 @@ const MOCK: Promocion[] = [
     detalle: [
       { idProducto: 3, nombreProducto: 'Teclado Mecánico', descuentoPorcentaje: 25 },
     ],
+    updatedat: '2026-10-01T12:00:00',
   },
   {
     idPromocion: 3,
@@ -52,6 +57,7 @@ const MOCK: Promocion[] = [
     fechaHasta: '2026-06-15T23:59:59',
     activa: false,
     detalle: [],
+    updatedat: '2026-05-20T09:30:00',
   },
 ]
 
@@ -70,37 +76,69 @@ export const promocionesService = {
       fechaDesde: p.fechadesde,
       fechaHasta: p.fechahasta,
       activa: p.activa,
-      esGeneral: p.esgeneral,
-      detalle: p.detallepromocion ?? [],
+      esAplicable: p.esAplicable,
+      esGeneral: p.esGeneral,
+      detalle: (p.detallepromocion ?? []).map((d: any) => ({
+      idProducto: d.idproducto,
+      nombreProducto: d.productos?.nombre ?? '—',
+      descuentoPorcentaje: d.descuentoporcentaje,
+    })),
+      updatedat: p.updatedat,
     }))
   },
 
   async getById(id: number): Promise<Promocion> {
     try {
-      const { data } = await api.get<Promocion>(`/promociones/${id}`)
-      return data
+      const { data } = await api.get<any>(`/promociones/${id}`)
+      return {
+        idPromocion: data.idpromocion,
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        fechaDesde: data.fechadesde,
+        fechaHasta: data.fechahasta,
+        activa: data.activa,
+        esAplicable: data.esAplicable,
+        esGeneral: data.esgeneral,
+        detalle: data.detallepromocion ?? [],
+        updatedat: data.updatedat,
+      }
     } catch {
       const p = mockStore.find((x) => x.idPromocion === id)
-      if (!p) throw new Error('Promoción no encontrada')
+      if (!p) {
+        throw new Error('Promoción no encontrada')
+      }
       return p
     }
   },
 
-async create(payload: NuevaPromocion): Promise<Promocion> {
-  const { data } = await api.post<Promocion>('/promociones', payload)
-  return data
-},
+  async buscarPorNombre(nombre: string): Promise<Promocion[]> {
+    const { data } = await api.get(`/promociones/buscar/${nombre}`)
+    return data
+  },
 
-async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
-  const { data } = await api.put<Promocion>(`/promociones/${id}`, payload)
-  return data
-},
+  async create(payload: NuevaPromocion): Promise<Promocion> {
+    const { data } = await api.post<Promocion>('/promociones', payload)
+    return data
+  },
+
+  async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
+    const { data } = await api.put<Promocion>(`/promociones/${id}`, payload)
+    return data
+  },
 
   async remove(id: number): Promise<void> {
     try {
       await api.delete(`/promociones/${id}`)
     } catch {
-      mockStore = mockStore.filter((p) => p.idPromocion !== id)
+      mockStore = mockStore.map((p) =>
+        p.idPromocion === id
+          ? {
+            ...p,
+            eliminada: true,
+            activa: false,
+          }
+          : p
+      )
     }
   },
 
@@ -112,7 +150,7 @@ async update(id: number, payload: Partial<NuevaPromocion>): Promise<Promocion> {
     } catch {
       return mockStore.filter((p) => {
         const now = new Date(f)
-        return p.activa && new Date(p.fechaDesde) <= now && now <= new Date(p.fechaHasta)
+        return !p.eliminada && p.activa && new Date(p.fechaDesde) <= now && now <= new Date(p.fechaHasta)
       })
     }
   },
