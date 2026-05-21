@@ -78,7 +78,11 @@ export const promocionesService = {
       activa: p.activa,
       esAplicable: p.esAplicable,
       esGeneral: p.esGeneral,
-      detalle: p.detallepromocion ?? [],
+      detalle: (p.detallepromocion ?? []).map((d: any) => ({
+      idProducto: d.idproducto,
+      nombreProducto: d.productos?.nombre ?? '—',
+      descuentoPorcentaje: d.descuentoporcentaje,
+    })),
       updatedat: p.updatedat,
     }))
   },

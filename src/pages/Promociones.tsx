@@ -234,13 +234,13 @@ export function PromocionesPage() {
         detalles: form.esGeneral
           ? [
             {
-              idproducto: null,
+              idProducto: null,
               descuentoPorcentaje:
                 nuevoDetalle.descuentoPorcentaje,
             },
           ]
           : (form.detalle ?? []).map((d) => ({
-            idproducto: d.idProducto,
+            idProducto: d.idProducto,
             descuentoPorcentaje:
               d.descuentoPorcentaje,
           })),
