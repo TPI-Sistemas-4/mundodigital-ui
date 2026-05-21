@@ -29,6 +29,11 @@ export const cuponesService = {
     return data;
   },
 
+  async anular(id: number): Promise<Cupon & { mensaje: string }> {
+    const { data } = await api.patch(`/cupones/${id}/anular`);
+    return data;
+  },
+
   async generarCodigo(): Promise<string> {
     const { data } = await api.get<{ codigo: string }>('/cupones/generar-codigo');
     return data.codigo;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { cuponesService, type CreateCuponPayload } from '../services/cupones'
 import { useToast } from '../components/Toast'
-import { Dialog, Btn } from '../components/Dialog'
+import { Dialog, ConfirmDialog, Btn } from '../components/Dialog'
 import { api } from '../services/api'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -89,6 +89,7 @@ export function CuponesPage() {
   const [generando, setGenerando] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [promociones, setPromociones] = useState<Promocion[]>([])
+  const [anularId, setAnularId] = useState<number | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -105,10 +106,10 @@ export function CuponesPage() {
   useEffect(() => { load() }, [])
 
   useEffect(() => {
-    api.get('/clientes').then(({ data }) => setClientes(data)).catch(() => {})
+    api.get('/clientes').then(({ data }) => setClientes(data)).catch(() => { })
     api.get('/promociones').then(({ data }) =>
       setPromociones(data.filter((p: Promocion) => p.activa))
-    ).catch(() => {})
+    ).catch(() => { })
   }, [])
 
   const handleGenerarCodigo = async () => {
@@ -149,8 +150,25 @@ export function CuponesPage() {
     }
   }
 
+  const handleAnular = async () => {
+    if (!anularId) return
+    try {
+      const res = await cuponesService.anular(anularId)
+      toast(res.mensaje ?? 'Cupon anulado', 'success')
+      setAnularId(null)
+      load()
+    } catch (e: any) {
+      const msg = e?.response?.data?.message
+      toast(Array.isArray(msg) ? msg.join(' - ') : msg ?? e.message, 'error')
+      setAnularId(null)
+    }
+  }
+
+  const headers = ['ID', 'Codigo', 'Descuento', 'Cliente', 'Promocion', 'Vencimiento', 'Estado', '']
+
   return (
     <div>
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
         <div>
           <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
@@ -162,6 +180,7 @@ export function CuponesPage() {
         <Btn onClick={() => { setForm(EMPTY); setFormOpen(true) }}>+ Nuevo cupon</Btn>
       </div>
 
+      {/* Tabla */}
       <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>Cargando...</div>
@@ -176,7 +195,7 @@ export function CuponesPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #2e2e35' }}>
-                {['ID', 'Codigo', 'Descuento', 'Cliente', 'Promocion', 'Vencimiento', 'Estado'].map(h => (
+                {headers.map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left', fontSize: 11,
                     color: '#71717a', fontWeight: 500, fontFamily: 'DM Mono, monospace',
@@ -207,6 +226,22 @@ export function CuponesPage() {
                   <td style={{ padding: '14px 16px' }}>
                     <Badge activo={c.activo} />
                   </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <Btn
+                      variant="ghost"
+                      disabled={!c.activo}
+                      onClick={() => setAnularId(c.idcupon)}
+                      style={{
+                        padding: '5px 12px', fontSize: 12,
+                        color: c.activo ? '#f87171' : '#3f3f46',
+                        borderColor: c.activo ? 'rgba(248,113,113,0.3)' : 'rgba(63,63,70,0.3)',
+                        cursor: c.activo ? 'pointer' : 'not-allowed',
+                        opacity: c.activo ? 1 : 0.5,
+                      }}
+                    >
+                      Anular
+                    </Btn>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -214,6 +249,7 @@ export function CuponesPage() {
         )}
       </div>
 
+      {/* Dialog nuevo cupon */}
       <Dialog open={formOpen} title="Nuevo cupon" onClose={() => setFormOpen(false)}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -301,6 +337,14 @@ export function CuponesPage() {
           </div>
         </div>
       </Dialog>
+
+      {/* Confirm anular */}
+      <ConfirmDialog
+        open={anularId !== null}
+        message="Anular este cupon lo desactivara. Si fue utilizado en ventas, el historial quedara registrado. Esta accion no se puede deshacer."
+        onConfirm={handleAnular}
+        onCancel={() => setAnularId(null)}
+      />
     </div>
   )
 }
