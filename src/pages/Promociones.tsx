@@ -24,7 +24,8 @@ interface DetalleForm {
 }
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString('es-AR', {
+  const normalized = iso.includes('T') ? iso : iso + 'T00:00:00'
+  return new Date(normalized).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -65,13 +66,8 @@ export function PromocionesPage() {
 
   const load = async () => {
     setLoading(true)
-
     try {
-      if (search.trim()) {
-        setData(await promocionesService.buscarPorNombre(search))
-      } else {
-        setData(await promocionesService.getAll())
-      }
+      setData(await promocionesService.getAll())
     } catch (e: any) {
       toast(e.message, 'error')
     } finally {
@@ -79,7 +75,7 @@ export function PromocionesPage() {
     }
   }
 
-  useEffect(() => { load() }, [search])
+  useEffect(() => { load() }, [])
 
   const [nuevoDetalle, setNuevoDetalle] = useState({
     idproducto: 0,
@@ -90,7 +86,11 @@ export function PromocionesPage() {
   const [productos, setProductos] = useState<{ idproducto: number; nombre: string }[]>([])
   const [selectedProducto, setSelectedProducto] = useState('')
 
-  const sorted = [...data].sort((a, b) => {
+  const filtered = search.trim()
+    ? data.filter((p) => p.nombre.toLowerCase().includes(search.toLowerCase()))
+    : data
+
+  const sorted = [...filtered].sort((a, b) => {
   let valA: any, valB: any
 
     switch (sortKey) {
@@ -317,9 +317,11 @@ export function PromocionesPage() {
       <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>Cargando...</div>
-        ) : data.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>
-            No hay promociones. <button onClick={openNew} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer' }}>Creá la primera</button>
+            {search.trim()
+              ? `Sin resultados para "${search}"`
+              : <><span>No hay promociones. </span><button onClick={openNew} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer' }}>Creá la primera</button></>}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -414,7 +416,7 @@ export function PromocionesPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Field label="Fecha desde *">
               <DatePicker
-                selected={form.fechaDesde ? new Date(form.fechaDesde) : null}
+                selected={form.fechaDesde ? new Date(form.fechaDesde + 'T00:00:00') : null}
                 onChange={(date: Date | null) =>
                   setForm((f) => ({
                     ...f,
@@ -432,7 +434,7 @@ export function PromocionesPage() {
             </Field>
             <Field label="Fecha hasta *">
               <DatePicker
-                selected={form.fechaHasta ? new Date(form.fechaHasta) : null}
+                selected={form.fechaHasta ? new Date(form.fechaHasta + 'T00:00:00') : null}
                 onChange={(date: Date | null) =>
                   setForm((f) => ({
                     ...f,
@@ -444,7 +446,7 @@ export function PromocionesPage() {
                 dateFormat="dd/MM/yyyy"
                 locale="es"
                 placeholderText="dd/mm/aaaa"
-                minDate={form.fechaDesde ? new Date(form.fechaDesde) : new Date()}
+                minDate={form.fechaDesde ? new Date(form.fechaDesde + 'T00:00:00') : new Date()}
                 customInput={<input style={inputStyle} />}
               />
             </Field>
