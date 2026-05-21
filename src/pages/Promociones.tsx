@@ -57,6 +57,7 @@ export function PromocionesPage() {
   const [editTarget, setEditTarget] = useState<Promocion | null>(null)
   const [form, setForm] = useState<NuevaPromocion>(EMPTY)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [viewTarget, setViewTarget] = useState<Promocion | null>(null)
   const [saving, setSaving] = useState(false)
   type SortKey = 'updatedat' | 'activa' | 'fechadesde' | 'fechahasta' | 'duracion' |'nombre' | 'descripcion' | 'id'
   type SortDir = 'asc' | 'desc'
@@ -381,6 +382,7 @@ export function PromocionesPage() {
                   </td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>
+                      <Btn variant="ghost" onClick={() => setViewTarget(p)} style={{ padding: '5px 12px', fontSize: 12 }}>Ver</Btn>
                       <Btn
                         variant="ghost"
                         //disabled={p.activa}
@@ -574,6 +576,97 @@ export function PromocionesPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />
+
+      {/* View Dialog */}
+      <Dialog open={viewTarget !== null} title="Detalle de promoción" onClose={() => setViewTarget(null)} maxWidth={560}>
+        {viewTarget && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Nombre + tipo */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>NOMBRE</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5' }}>{viewTarget.nombre}</div>
+              </div>
+              <span style={{
+                flexShrink: 0, fontSize: 11, fontFamily: 'DM Mono, monospace',
+                padding: '3px 10px', borderRadius: 999,
+                background: viewTarget.esGeneral ? 'rgba(232,255,71,0.1)' : 'rgba(55,138,221,0.1)',
+                color: viewTarget.esGeneral ? '#e8ff47' : '#378add',
+                border: `1px solid ${viewTarget.esGeneral ? 'rgba(232,255,71,0.3)' : 'rgba(55,138,221,0.3)'}`,
+              }}>
+                {viewTarget.esGeneral ? 'General' : 'Por producto'}
+              </span>
+            </div>
+
+            {/* Descripción */}
+            {viewTarget.descripcion && (
+              <div>
+                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>DESCRIPCIÓN</div>
+                <div style={{ fontSize: 13, color: '#a1a1aa', lineHeight: 1.6 }}>{viewTarget.descripcion}</div>
+              </div>
+            )}
+
+            {/* Fechas */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ background: '#0f0f10', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35' }}>
+                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>FECHA DESDE</div>
+                <div style={{ fontSize: 14, color: '#f4f4f5', fontFamily: 'DM Mono, monospace' }}>{fmt(viewTarget.fechaDesde)}</div>
+              </div>
+              <div style={{ background: '#0f0f10', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35' }}>
+                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>FECHA HASTA</div>
+                <div style={{ fontSize: 14, color: '#f4f4f5', fontFamily: 'DM Mono, monospace' }}>{fmt(viewTarget.fechaHasta)}</div>
+              </div>
+            </div>
+
+            {/* Estado */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <Badge activa={viewTarget.activa} />
+              <span style={{ fontSize: 12, color: viewTarget.esAplicable ? '#4ade80' : '#71717a' }}>
+                {viewTarget.esAplicable ? '● Aplicable hoy' : '○ No aplicable hoy'}
+              </span>
+            </div>
+
+            {/* Descuento */}
+            <div>
+              <div style={{ fontSize: 11, color: '#71717a', marginBottom: 8 }}>
+                {viewTarget.esGeneral ? 'DESCUENTO GENERAL' : 'PRODUCTOS CON DESCUENTO'}
+              </div>
+              {viewTarget.esGeneral ? (
+                <div style={{ background: '#0f0f10', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35', display: 'inline-block' }}>
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 22, fontWeight: 700, color: '#e8ff47' }}>
+                    {viewTarget.detalle?.[0]?.descuentoPorcentaje ?? '—'}%
+                  </span>
+                  <span style={{ fontSize: 12, color: '#71717a', marginLeft: 8 }}>sobre todos los productos</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(viewTarget.detalle ?? []).length === 0 ? (
+                    <span style={{ fontSize: 13, color: '#71717a' }}>Sin productos asignados</span>
+                  ) : (viewTarget.detalle ?? []).map((d) => (
+                    <div key={d.idProducto} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '8px 12px', background: '#0f0f10', borderRadius: 8, border: '1px solid #2e2e35',
+                    }}>
+                      <span style={{ fontSize: 13, color: '#f4f4f5' }}>#{d.idProducto} — {d.nombreProducto}</span>
+                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: '#e8ff47' }}>{d.descuentoPorcentaje}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Última actualización */}
+            <div style={{ paddingTop: 8, borderTop: '1px solid #2e2e35', fontSize: 11, color: '#52525b' }}>
+              Última actualización: {fmt(viewTarget.updatedat)}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Btn variant="ghost" onClick={() => setViewTarget(null)}>Cerrar</Btn>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
   )
 }
