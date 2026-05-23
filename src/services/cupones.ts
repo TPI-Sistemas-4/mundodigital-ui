@@ -8,12 +8,19 @@ export interface CreateCuponPayload {
   fechavencimiento?: string; // ISO string
 }
 
+export interface UpdateCuponPayload {
+  idcliente?: number | null;
+  activo?: boolean;
+  descuentoporcentaje?: number;
+  fechavencimiento?: string;
+}
 export interface Cupon {
   idcupon: number;
   codigo: string;
   descuentoporcentaje: number;
   activo: boolean;
   fechavencimiento: string | null;
+  idpromocion: number | null;
   clientes: { idcliente: number; nombre: string; apellido: string; email: string } | null;
   promociones: { idpromocion: number; nombre: string } | null;
 }
@@ -26,6 +33,11 @@ export const cuponesService = {
 
   async listar(): Promise<Cupon[]> {
     const { data } = await api.get<Cupon[]>('/cupones');
+    return data;
+  },
+
+  async actualizar(id: number, payload: UpdateCuponPayload): Promise<Cupon> {
+    const { data } = await api.patch<Cupon>(`/cupones/${id}`, payload);
     return data;
   },
 
