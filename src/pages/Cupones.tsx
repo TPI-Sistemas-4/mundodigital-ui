@@ -3,7 +3,6 @@ import { cuponesService, type CreateCuponPayload } from '../services/cupones'
 import { useToast } from '../components/Toast'
 import { Dialog, ConfirmDialog, Btn } from '../components/Dialog'
 import { api } from '../services/api'
-import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
 interface Cliente {
@@ -13,10 +12,16 @@ interface Cliente {
   email: string
 }
 
+interface DetallePromocion {
+  descuentoporcentaje: number
+}
+
 interface Promocion {
   idpromocion: number
   nombre: string
   activa: boolean
+  fechahasta: string
+  detallepromocion: DetallePromocion[]
 }
 
 interface Cupon {
@@ -43,6 +48,11 @@ function fmt(iso: string) {
   })
 }
 
+function isoDate(iso: string) {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function Badge({ activo }: { activo: boolean }) {
   return (
     <span style={{
@@ -53,15 +63,17 @@ function Badge({ activo }: { activo: boolean }) {
       border: `1px solid ${activo ? 'rgba(74,222,128,0.3)' : 'rgba(113,113,122,0.3)'}`,
     }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: activo ? '#4ade80' : '#71717a' }} />
-      {activo ? 'Activo' : 'Inactivo'}
+      {activo ? 'Activo' : 'Anulado'}
     </span>
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>{label}</label>
+      <label style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>
+        {label}{required && <span style={{ color: '#f87171', marginLeft: 3 }}>*</span>}
+      </label>
       {children}
     </div>
   )
@@ -79,6 +91,13 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif',
 }
 
+const readonlyStyle: React.CSSProperties = {
+  ...inputStyle,
+  color: '#71717a',
+  cursor: 'not-allowed',
+  background: '#0a0a0b',
+}
+
 export function CuponesPage() {
   const { toast } = useToast()
   const [cupones, setCupones] = useState<Cupon[]>([])
@@ -89,6 +108,7 @@ export function CuponesPage() {
   const [generando, setGenerando] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [promociones, setPromociones] = useState<Promocion[]>([])
+  const [promoSeleccionada, setPromoSeleccionada] = useState<Promocion | null>(null)
   const [anularId, setAnularId] = useState<number | null>(null)
 
   const load = async () => {
@@ -106,11 +126,31 @@ export function CuponesPage() {
   useEffect(() => { load() }, [])
 
   useEffect(() => {
-    api.get('/clientes').then(({ data }) => setClientes(data)).catch(() => { })
+    api.get('/clientes').then(({ data }) => setClientes(data)).catch(() => {})
     api.get('/promociones').then(({ data }) =>
       setPromociones(data.filter((p: Promocion) => p.activa))
-    ).catch(() => { })
+    ).catch(() => {})
   }, [])
+
+  // Cuando cambia la promocion seleccionada, auto-rellena descuento y fecha
+  const handlePromoChange = (idpromocion: number | undefined) => {
+    if (!idpromocion) {
+      setPromoSeleccionada(null)
+      setForm(f => ({ ...f, idpromocion: undefined, descuentoporcentaje: 10, fechavencimiento: '' }))
+      return
+    }
+    const promo = promociones.find(p => p.idpromocion === idpromocion) ?? null
+    setPromoSeleccionada(promo)
+    if (promo) {
+      const descuento = promo.detallepromocion[0]?.descuentoporcentaje ?? 10
+      setForm(f => ({
+        ...f,
+        idpromocion,
+        descuentoporcentaje: descuento,
+        fechavencimiento: isoDate(promo.fechahasta),
+      }))
+    }
+  }
 
   const handleGenerarCodigo = async () => {
     setGenerando(true)
@@ -126,21 +166,20 @@ export function CuponesPage() {
 
   const handleSave = async () => {
     if (!form.codigo.trim()) { toast('El codigo es obligatorio', 'error'); return }
-    if (form.descuentoporcentaje < 1 || form.descuentoporcentaje > 100) {
-      toast('El descuento debe estar entre 1 y 100', 'error'); return
-    }
+    if (!form.idpromocion) { toast('Debes seleccionar una promocion', 'error'); return }
+
     setSaving(true)
     try {
       await cuponesService.crear({
         ...form,
         codigo: form.codigo.toUpperCase(),
-        fechavencimiento: form.fechavencimiento || undefined,
+        // idcliente undefined = general para todos
         idcliente: form.idcliente || undefined,
-        idpromocion: form.idpromocion || undefined,
       })
       toast('Cupon registrado correctamente', 'success')
       setFormOpen(false)
       setForm(EMPTY)
+      setPromoSeleccionada(null)
       load()
     } catch (e: any) {
       const msg = e?.response?.data?.message
@@ -177,7 +216,7 @@ export function CuponesPage() {
             {cupones.length} cupon{cupones.length !== 1 ? 'es' : ''} · {cupones.filter(c => c.activo).length} activos
           </p>
         </div>
-        <Btn onClick={() => { setForm(EMPTY); setFormOpen(true) }}>+ Nuevo cupon</Btn>
+        <Btn onClick={() => { setForm(EMPTY); setPromoSeleccionada(null); setFormOpen(true) }}>+ Nuevo cupon</Btn>
       </div>
 
       {/* Tabla */}
@@ -215,7 +254,7 @@ export function CuponesPage() {
                   <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#e8ff47', fontSize: 13 }}>{c.codigo}</td>
                   <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', color: '#f4f4f5', fontSize: 13 }}>{c.descuentoporcentaje}%</td>
                   <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13 }}>
-                    {c.clientes ? `${c.clientes.nombre} ${c.clientes.apellido}` : '-'}
+                    {c.clientes ? `${c.clientes.nombre} ${c.clientes.apellido}` : 'General'}
                   </td>
                   <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13 }}>
                     {c.promociones ? c.promociones.nombre : '-'}
@@ -253,7 +292,8 @@ export function CuponesPage() {
       <Dialog open={formOpen} title="Nuevo cupon" onClose={() => setFormOpen(false)}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          <Field label="Codigo *">
+          {/* Codigo */}
+          <Field label="Codigo" required>
             <div style={{ display: 'flex', gap: 8 }}>
               <input
                 value={form.codigo}
@@ -268,72 +308,87 @@ export function CuponesPage() {
             </div>
           </Field>
 
-          <Field label={`Descuento: ${form.descuentoporcentaje}%`}>
+          {/* Promocion — obligatorio, va primero para derivar el resto */}
+          <Field label="Promocion asociada" required>
+            <select
+              value={form.idpromocion ?? ''}
+              onChange={e => handlePromoChange(e.target.value ? Number(e.target.value) : undefined)}
+              style={{ ...inputStyle, appearance: 'none', borderColor: !form.idpromocion ? 'rgba(248,113,113,0.4)' : '#2e2e35' }}
+            >
+              <option value="">- Selecciona una promocion -</option>
+              {promociones.map(p => (
+                <option key={p.idpromocion} value={p.idpromocion}>{p.nombre}</option>
+              ))}
+            </select>
+            {!form.idpromocion && (
+              <span style={{ fontSize: 11, color: '#f87171' }}>Requerido</span>
+            )}
+          </Field>
+
+          {/* Descuento — readonly, viene de la promocion */}
+          <Field label="Descuento de la promocion">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 12, color: '#71717a', minWidth: 24 }}>1%</span>
-              <input
-                type="range" min={1} max={100} step={1}
-                value={form.descuentoporcentaje}
-                onChange={e => setForm(f => ({ ...f, descuentoporcentaje: Number(e.target.value) }))}
-                style={{ flex: 1, accentColor: '#e8ff47' }}
-              />
-              <span style={{ fontSize: 12, color: '#71717a', minWidth: 32 }}>100%</span>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, fontWeight: 500, color: '#e8ff47', minWidth: 40, textAlign: 'right' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div style={{
+                  height: 6, borderRadius: 999, background: '#2e2e35', overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%', borderRadius: 999, background: '#e8ff47',
+                    width: `${form.descuentoporcentaje}%`, transition: 'width 0.3s',
+                  }} />
+                </div>
+              </div>
+              <span style={{
+                fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600,
+                color: promoSeleccionada ? '#e8ff47' : '#3f3f46', minWidth: 40, textAlign: 'right',
+              }}>
                 {form.descuentoporcentaje}%
               </span>
             </div>
+            {!promoSeleccionada && (
+              <span style={{ fontSize: 11, color: '#3f3f46' }}>Selecciona una promocion para ver el descuento</span>
+            )}
           </Field>
 
-          <Field label="Cliente destino (opcional)">
+          {/* Cliente — opcional, sin valor = general */}
+          <Field label="Cliente destino">
             <select
               value={form.idcliente ?? ''}
               onChange={e => setForm(f => ({ ...f, idcliente: e.target.value ? Number(e.target.value) : undefined }))}
               style={{ ...inputStyle, appearance: 'none' }}
             >
-              <option value="">- Sin cliente asignado -</option>
+              <option value="">- General (todos los clientes) -</option>
               {clientes.map(c => (
                 <option key={c.idcliente} value={c.idcliente}>
                   {c.nombre} {c.apellido} ({c.email})
                 </option>
               ))}
             </select>
+            <span style={{ fontSize: 11, color: '#52525b' }}>
+              Sin seleccion el cupon aplica a todos los clientes
+            </span>
           </Field>
 
-          <Field label="Promocion asociada (opcional)">
-            <select
-              value={form.idpromocion ?? ''}
-              onChange={e => setForm(f => ({ ...f, idpromocion: e.target.value ? Number(e.target.value) : undefined }))}
-              style={{ ...inputStyle, appearance: 'none' }}
-            >
-              <option value="">- Sin promocion -</option>
-              {promociones.map(p => (
-                <option key={p.idpromocion} value={p.idpromocion}>{p.nombre}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Fecha de vencimiento (opcional)">
-            <DatePicker
-              selected={form.fechavencimiento ? new Date(form.fechavencimiento) : null}
-              onChange={(date: Date | null) =>
-                setForm(f => ({
-                  ...f,
-                  fechavencimiento: date
-                    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-                    : '',
-                }))
-              }
-              dateFormat="dd/MM/yyyy"
-              locale="es"
-              placeholderText="dd/mm/aaaa"
-              minDate={new Date()}
-              customInput={<input style={inputStyle} />}
+          {/* Fecha de vencimiento — readonly, viene de la promocion */}
+          <Field label="Fecha de vencimiento" required>
+            <input
+              readOnly
+              value={promoSeleccionada ? fmt(promoSeleccionada.fechahasta) : ''}
+              placeholder="Se completa al elegir la promocion"
+              style={promoSeleccionada ? readonlyStyle : { ...readonlyStyle, color: '#3f3f46' }}
             />
+            {promoSeleccionada && (
+              <span style={{ fontSize: 11, color: '#52525b' }}>
+                Corresponde a la fecha hasta de la promocion seleccionada
+              </span>
+            )}
           </Field>
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid #2e2e35' }}>
-            <Btn variant="ghost" onClick={() => setFormOpen(false)}>Cancelar</Btn>
-            <Btn onClick={handleSave} disabled={saving}>{saving ? 'Registrando...' : 'Registrar cupon'}</Btn>
+            <Btn variant="ghost" onClick={() => { setFormOpen(false); setPromoSeleccionada(null) }}>Cancelar</Btn>
+            <Btn onClick={handleSave} disabled={saving || !form.idpromocion}>
+              {saving ? 'Registrando...' : 'Registrar cupon'}
+            </Btn>
           </div>
         </div>
       </Dialog>
