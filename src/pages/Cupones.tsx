@@ -57,10 +57,10 @@ function Badge({ activo }: { activo: boolean }) {
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '2px 10px', borderRadius: 999, fontSize: 12, fontFamily: 'DM Mono, monospace',
       background: activo ? 'rgba(74,222,128,0.1)' : 'rgba(113,113,122,0.1)',
-      color: activo ? '#4ade80' : '#71717a',
+      color: activo ? 'var(--success)' : 'var(--text-muted)',
       border: `1px solid ${activo ? 'rgba(74,222,128,0.3)' : 'rgba(113,113,122,0.3)'}`,
     }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: activo ? '#4ade80' : '#71717a' }} />
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: activo ? 'var(--success)' : 'var(--text-muted)' }} />
       {activo ? 'Activo' : 'Anulado'}
     </span>
   )
@@ -69,21 +69,21 @@ function Badge({ activo }: { activo: boolean }) {
 function Field({ label, children, required, hint }: { label: string; children: React.ReactNode; required?: boolean; hint?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>
-        {label}{required && <span style={{ color: '#f87171', marginLeft: 3 }}>*</span>}
+      <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
+        {label}{required && <span style={{ color: 'var(--danger)', marginLeft: 3 }}>*</span>}
       </label>
       {children}
-      {hint && <span style={{ fontSize: 11, color: '#52525b' }}>{hint}</span>}
+      {hint && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{hint}</span>}
     </div>
   )
 }
 
 const inputStyle: React.CSSProperties = {
-  background: '#0f0f10',
-  border: '1px solid #2e2e35',
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
   borderRadius: 8,
   padding: '9px 12px',
-  color: '#f4f4f5',
+  color: 'var(--text)',
   fontSize: 14,
   width: '100%',
   outline: 'none',
@@ -92,9 +92,9 @@ const inputStyle: React.CSSProperties = {
 
 const readonlyStyle: React.CSSProperties = {
   ...inputStyle,
-  color: '#52525b',
+  color: 'var(--text-muted)',
   cursor: 'not-allowed',
-  background: '#0a0a0b',
+  background: 'var(--bg)',
 }
 
 export function CuponesPage() {
@@ -204,7 +204,7 @@ export function CuponesPage() {
     setEditing(true)
     try {
       const payload: UpdateCuponPayload = {
-        idcliente: editForm.idcliente, // null = general
+        idcliente: editForm.idcliente,
         activo: editForm.activo,
         ...(!tienePromocion && {
           descuentoporcentaje: editForm.descuentoporcentaje,
@@ -243,9 +243,9 @@ export function CuponesPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
         <div>
-          <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, color: '#f4f4f5' }}>Cupones</h1>
-          <p style={{ color: '#71717a', fontSize: 13, marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
+          <h1 style={{ fontSize: 24, fontWeight: 500, color: 'var(--text)' }}>Cupones</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
             {cupones.length} cupon{cupones.length !== 1 ? 'es' : ''} · {cupones.filter(c => c.activo).length} activos
           </p>
         </div>
@@ -253,22 +253,22 @@ export function CuponesPage() {
       </div>
 
       {/* Tabla */}
-      <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>Cargando...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando...</div>
         ) : cupones.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             No hay cupones.{' '}
-            <button onClick={() => setCreateOpen(true)} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => setCreateOpen(true)} style={{ color: 'var(--btn-bg)', background: 'none', border: 'none', cursor: 'pointer' }}>
               Crea el primero
             </button>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #2e2e35' }}>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {headers.map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, color: '#71717a', fontWeight: 500, fontFamily: 'DM Mono, monospace' }}>{h}</th>
+                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, fontFamily: 'DM Mono, monospace' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -276,20 +276,20 @@ export function CuponesPage() {
               {cupones.map((c, i) => (
                 <tr
                   key={c.idcupon}
-                  style={{ borderBottom: i < cupones.length - 1 ? '1px solid #2e2e35' : 'none', transition: 'background 0.1s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#232328')}
+                  style={{ borderBottom: i < cupones.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.1s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: '#71717a' }}>#{c.idcupon}</td>
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#e8ff47', fontSize: 13 }}>{c.codigo}</td>
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', color: '#f4f4f5', fontSize: 13 }}>{c.descuentoporcentaje}%</td>
-                  <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13 }}>
+                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: 'var(--text-muted)' }}>#{c.idcupon}</td>
+                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--btn-bg)', fontSize: 13 }}>{c.codigo}</td>
+                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', color: 'var(--text)', fontSize: 13 }}>{c.descuentoporcentaje}%</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
                     {c.clientes ? `${c.clientes.nombre} ${c.clientes.apellido}` : 'General'}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13 }}>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
                     {c.promociones ? c.promociones.nombre : '-'}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13, whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>
                     {c.fechavencimiento ? fmt(c.fechavencimiento) : '-'}
                   </td>
                   <td style={{ padding: '14px 16px' }}><Badge activo={c.activo} /></td>
@@ -309,7 +309,7 @@ export function CuponesPage() {
                         onClick={() => setAnularId(c.idcupon)}
                         style={{
                           padding: '5px 12px', fontSize: 12,
-                          color: c.activo ? '#f87171' : '#3f3f46',
+                          color: c.activo ? 'var(--danger)' : 'var(--text-dim)',
                           borderColor: c.activo ? 'rgba(248,113,113,0.3)' : 'rgba(63,63,70,0.3)',
                           cursor: c.activo ? 'pointer' : 'not-allowed',
                           opacity: c.activo ? 1 : 0.5,
@@ -349,7 +349,7 @@ export function CuponesPage() {
             <select
               value={createForm.idpromocion ?? ''}
               onChange={e => handlePromoChange(e.target.value ? Number(e.target.value) : undefined)}
-              style={{ ...inputStyle, appearance: 'none', borderColor: !createForm.idpromocion ? 'rgba(248,113,113,0.4)' : '#2e2e35' }}
+              style={{ ...inputStyle, appearance: 'none', borderColor: !createForm.idpromocion ? 'rgba(248,113,113,0.4)' : 'var(--border)' }}
             >
               <option value="">- Selecciona una promocion -</option>
               {promociones.map(p => (
@@ -360,14 +360,14 @@ export function CuponesPage() {
 
           <Field label="Descuento de la promocion">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ flex: 1, height: 6, borderRadius: 999, background: '#2e2e35', overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: 999, background: '#e8ff47', width: `${createForm.descuentoporcentaje}%`, transition: 'width 0.3s' }} />
+              <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'var(--border)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 999, background: 'var(--btn-bg)', width: `${createForm.descuentoporcentaje}%`, transition: 'width 0.3s' }} />
               </div>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: promoSeleccionada ? '#e8ff47' : '#3f3f46', minWidth: 40, textAlign: 'right' }}>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: promoSeleccionada ? 'var(--btn-bg)' : 'var(--text-dim)', minWidth: 40, textAlign: 'right' }}>
                 {createForm.descuentoporcentaje}%
               </span>
             </div>
-            {!promoSeleccionada && <span style={{ fontSize: 11, color: '#3f3f46' }}>Selecciona una promocion para ver el descuento</span>}
+            {!promoSeleccionada && <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Selecciona una promocion para ver el descuento</span>}
           </Field>
 
           <Field label="Cliente destino" hint="Sin seleccion el cupon aplica a todos los clientes">
@@ -388,12 +388,12 @@ export function CuponesPage() {
               readOnly
               value={promoSeleccionada ? fmt(promoSeleccionada.fechahasta) : ''}
               placeholder="Se completa al elegir la promocion"
-              style={promoSeleccionada ? readonlyStyle : { ...readonlyStyle, color: '#3f3f46' }}
+              style={promoSeleccionada ? readonlyStyle : { ...readonlyStyle, color: 'var(--text-dim)' }}
             />
-            {promoSeleccionada && <span style={{ fontSize: 11, color: '#52525b' }}>Corresponde a la fecha hasta de la promocion</span>}
+            {promoSeleccionada && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Corresponde a la fecha hasta de la promocion</span>}
           </Field>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid #2e2e35' }}>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
             <Btn variant="ghost" onClick={() => { setCreateOpen(false); setPromoSeleccionada(null) }}>Cancelar</Btn>
             <Btn onClick={handleCreate} disabled={creating || !createForm.idpromocion}>
               {creating ? 'Registrando...' : 'Registrar cupon'}
@@ -407,12 +407,10 @@ export function CuponesPage() {
         {editTarget && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            {/* Codigo — readonly, no se puede modificar */}
             <Field label="Codigo" hint="El codigo unico no se puede modificar">
-              <input readOnly value={editTarget.codigo} style={{ ...readonlyStyle, fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#e8ff47' }} />
+              <input readOnly value={editTarget.codigo} style={{ ...readonlyStyle, fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--btn-bg)' }} />
             </Field>
 
-            {/* Promocion — informativa */}
             <Field label="Promocion asociada">
               <input
                 readOnly
@@ -420,39 +418,37 @@ export function CuponesPage() {
                 style={readonlyStyle}
               />
               {tienePromocion && (
-                <span style={{ fontSize: 11, color: '#52525b' }}>El descuento y vencimiento se rigen por la promocion</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>El descuento y vencimiento se rigen por la promocion</span>
               )}
             </Field>
 
-            {/* Descuento — editable solo sin promocion */}
             <Field label={`Descuento${tienePromocion ? ' (de la promocion)' : ''}`}>
               {tienePromocion ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ flex: 1, height: 6, borderRadius: 999, background: '#2e2e35', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', borderRadius: 999, background: '#e8ff47', width: `${editForm.descuentoporcentaje}%` }} />
+                  <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'var(--border)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 999, background: 'var(--btn-bg)', width: `${editForm.descuentoporcentaje}%` }} />
                   </div>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: '#e8ff47', minWidth: 40, textAlign: 'right' }}>
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: 'var(--btn-bg)', minWidth: 40, textAlign: 'right' }}>
                     {editForm.descuentoporcentaje}%
                   </span>
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 12, color: '#71717a', minWidth: 24 }}>1%</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 24 }}>1%</span>
                   <input
                     type="range" min={1} max={100} step={1}
                     value={editForm.descuentoporcentaje}
                     onChange={e => setEditForm(f => ({ ...f, descuentoporcentaje: Number(e.target.value) }))}
-                    style={{ flex: 1, accentColor: '#e8ff47' }}
+                    style={{ flex: 1, accentColor: 'var(--btn-bg)' as any }}
                   />
-                  <span style={{ fontSize: 12, color: '#71717a', minWidth: 32 }}>100%</span>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: '#e8ff47', minWidth: 40, textAlign: 'right' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 32 }}>100%</span>
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, fontWeight: 600, color: 'var(--btn-bg)', minWidth: 40, textAlign: 'right' }}>
                     {editForm.descuentoporcentaje}%
                   </span>
                 </div>
               )}
             </Field>
 
-            {/* Fecha vencimiento — editable solo sin promocion */}
             <Field label={`Fecha de vencimiento${tienePromocion ? ' (de la promocion)' : ''}`}>
               {tienePromocion ? (
                 <input readOnly value={editTarget.fechavencimiento ? fmt(editTarget.fechavencimiento) : '-'} style={readonlyStyle} />
@@ -474,7 +470,6 @@ export function CuponesPage() {
               )}
             </Field>
 
-            {/* Cliente — siempre editable */}
             <Field label="Cliente destino" hint="Sin seleccion el cupon aplica a todos los clientes">
               <select
                 value={editForm.idcliente ?? ''}
@@ -488,20 +483,19 @@ export function CuponesPage() {
               </select>
             </Field>
 
-            {/* Estado — siempre editable */}
             <Field label="Estado">
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={editForm.activo}
                   onChange={e => setEditForm(f => ({ ...f, activo: e.target.checked }))}
-                  style={{ width: 16, height: 16, accentColor: '#e8ff47' }}
+                  style={{ width: 16, height: 16, accentColor: 'var(--btn-bg)' as any }}
                 />
-                <span style={{ fontSize: 13, color: '#a1a1aa' }}>Cupon activo</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Cupon activo</span>
               </label>
             </Field>
 
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid #2e2e35' }}>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
               <Btn variant="ghost" onClick={() => setEditTarget(null)}>Cancelar</Btn>
               <Btn onClick={handleEdit} disabled={editing}>{editing ? 'Guardando...' : 'Guardar cambios'}</Btn>
             </div>
