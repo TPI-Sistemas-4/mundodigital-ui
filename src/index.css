@@ -7,6 +7,7 @@
   --border: #2e2e35;
   --accent: #e8ff47;
   --accent-dim: rgba(232,255,71,0.12);
+  --accent-border: rgba(232,255,71,0.3);
   --accent-text: #e8ff47;
   --btn-bg: #e8ff47;
   --btn-text: #0f0f10;
@@ -30,8 +31,9 @@
   --surface2: #e2e8f0;
   --border: #cbd5e1;
   --accent: #e8ff47;
-  --accent-dim: rgba(180,200,0,0.12);
-  --accent-text: #5a6e00;
+  --accent-dim: rgba(217,119,6,0.1);
+  --accent-border: rgba(217,119,6,0.3);
+  --accent-text: #d97706;
   --btn-bg: #3b82f6;
   --btn-text: #ffffff;
   --toggle-active: #3b82f6;

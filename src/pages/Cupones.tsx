@@ -51,17 +51,20 @@ function isoDate(iso: string) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function Badge({ activo }: { activo: boolean }) {
+function Badge({ activo, fechavencimiento }: { activo: boolean; fechavencimiento: string | null }) {
+  const vencido = activo && !!fechavencimiento && new Date(fechavencimiento) < new Date()
+  const label = !activo ? 'Anulado' : vencido ? 'Vencido' : 'Activo'
+  const color = !activo ? 'var(--text-muted)' : vencido ? 'var(--warning)' : 'var(--success)'
+  const bg = !activo ? 'rgba(113,113,122,0.1)' : vencido ? 'rgba(251,191,36,0.1)' : 'rgba(74,222,128,0.1)'
+  const border = !activo ? 'rgba(113,113,122,0.3)' : vencido ? 'rgba(251,191,36,0.3)' : 'rgba(74,222,128,0.3)'
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '2px 10px', borderRadius: 999, fontSize: 12, fontFamily: 'DM Mono, monospace',
-      background: activo ? 'rgba(74,222,128,0.1)' : 'rgba(113,113,122,0.1)',
-      color: activo ? 'var(--success)' : 'var(--text-muted)',
-      border: `1px solid ${activo ? 'rgba(74,222,128,0.3)' : 'rgba(113,113,122,0.3)'}`,
+      background: bg, color, border: `1px solid ${border}`,
     }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: activo ? 'var(--success)' : 'var(--text-muted)' }} />
-      {activo ? 'Activo' : 'Anulado'}
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
+      {label}
     </span>
   )
 }
@@ -101,6 +104,7 @@ export function CuponesPage() {
   const { toast } = useToast()
   const [cupones, setCupones] = useState<Cupon[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   // create
   const [createOpen, setCreateOpen] = useState(false)
@@ -109,6 +113,9 @@ export function CuponesPage() {
   const [creating, setCreating] = useState(false)
   const [generando, setGenerando] = useState(false)
 
+  // view
+  const [viewTarget, setViewTarget] = useState<Cupon | null>(null)
+
   // edit
   const [editTarget, setEditTarget] = useState<Cupon | null>(null)
   const [editForm, setEditForm] = useState<EditForm>({ idcliente: null, activo: true, descuentoporcentaje: 10, fechavencimiento: '' })
@@ -116,6 +123,18 @@ export function CuponesPage() {
 
   // anular
   const [anularId, setAnularId] = useState<number | null>(null)
+
+  // sort
+  type SortKey = 'id' | 'codigo' | 'descuento' | 'cliente' | 'promocion' | 'vencimiento' | 'activo'
+  type SortDir = 'asc' | 'desc'
+  const [sortKey, setSortKey] = useState<SortKey>('id')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+  const handleSort = (key: SortKey | null) => {
+    if (!key) return
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
 
   // datos auxiliares
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -236,7 +255,52 @@ export function CuponesPage() {
     }
   }
 
-  const headers = ['ID', 'Codigo', 'Descuento', 'Cliente', 'Promocion', 'Vencimiento', 'Estado', '']
+  const filtered = search.trim()
+    ? cupones.filter((c) => {
+        const q = search.toLowerCase()
+        return (
+          c.codigo.toLowerCase().includes(q) ||
+          (c.clientes ? `${c.clientes.nombre} ${c.clientes.apellido}`.toLowerCase().includes(q) : false) ||
+          (c.promociones?.nombre.toLowerCase().includes(q) ?? false)
+        )
+      })
+    : cupones
+
+  const sorted = [...filtered].sort((a, b) => {
+    let valA: any, valB: any
+    switch (sortKey) {
+      case 'id': valA = a.idcupon; valB = b.idcupon; break
+      case 'codigo': valA = a.codigo.toLowerCase(); valB = b.codigo.toLowerCase(); break
+      case 'descuento': valA = a.descuentoporcentaje; valB = b.descuentoporcentaje; break
+      case 'cliente':
+        valA = a.clientes ? `${a.clientes.nombre} ${a.clientes.apellido}`.toLowerCase() : ''
+        valB = b.clientes ? `${b.clientes.nombre} ${b.clientes.apellido}`.toLowerCase() : ''
+        break
+      case 'promocion':
+        valA = a.promociones?.nombre.toLowerCase() ?? ''
+        valB = b.promociones?.nombre.toLowerCase() ?? ''
+        break
+      case 'vencimiento':
+        valA = a.fechavencimiento ? new Date(a.fechavencimiento).getTime() : 0
+        valB = b.fechavencimiento ? new Date(b.fechavencimiento).getTime() : 0
+        break
+      case 'activo': valA = a.activo ? 1 : 0; valB = b.activo ? 1 : 0; break
+    }
+    if (valA < valB) return sortDir === 'asc' ? -1 : 1
+    if (valA > valB) return sortDir === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const headers: { label: string; key: SortKey | null }[] = [
+    { label: 'ID', key: 'id' },
+    { label: 'Codigo', key: 'codigo' },
+    { label: 'Descuento', key: 'descuento' },
+    { label: 'Cliente', key: 'cliente' },
+    { label: 'Promocion', key: 'promocion' },
+    { label: 'Vencimiento', key: 'vencimiento' },
+    { label: 'Estado', key: 'activo' },
+    { label: '', key: null },
+  ]
 
   return (
     <div>
@@ -252,31 +316,53 @@ export function CuponesPage() {
         <Btn onClick={() => { setCreateForm(EMPTY_CREATE); setPromoSeleccionada(null); setCreateOpen(true) }}>+ Nuevo cupon</Btn>
       </div>
 
+      <div style={{ marginBottom: 16 }}>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por código, cliente o promoción..."
+          style={inputStyle}
+        />
+      </div>
+
       {/* Tabla */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando...</div>
-        ) : cupones.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
-            No hay cupones.{' '}
-            <button onClick={() => setCreateOpen(true)} style={{ color: 'var(--btn-bg)', background: 'none', border: 'none', cursor: 'pointer' }}>
-              Crea el primero
-            </button>
+            {search.trim()
+              ? `Sin resultados para "${search}"`
+              : <><span>No hay cupones. </span><button onClick={() => setCreateOpen(true)} style={{ color: 'var(--btn-bg)', background: 'none', border: 'none', cursor: 'pointer' }}>Crea el primero</button></>}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {headers.map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, fontFamily: 'DM Mono, monospace' }}>{h}</th>
+                  <th
+                    key={h.label}
+                    onClick={() => handleSort(h.key)}
+                    style={{
+                      padding: '12px 16px', textAlign: 'left', fontSize: 11,
+                      color: sortKey === h.key ? 'var(--btn-bg)' : 'var(--text-muted)',
+                      fontWeight: 500, fontFamily: 'DM Mono, monospace',
+                      whiteSpace: 'nowrap', cursor: h.key ? 'pointer' : 'default',
+                      userSelect: 'none',
+                    }}
+                  >
+                    {h.label}
+                    {h.key && sortKey === h.key && <span style={{ marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    {h.key && sortKey !== h.key && <span style={{ marginLeft: 4, opacity: 0.3 }}>↕</span>}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {cupones.map((c, i) => (
+              {sorted.map((c, i) => (
                 <tr
                   key={c.idcupon}
-                  style={{ borderBottom: i < cupones.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.1s' }}
+                  style={{ borderBottom: i < sorted.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.1s' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
@@ -292,9 +378,12 @@ export function CuponesPage() {
                   <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>
                     {c.fechavencimiento ? fmt(c.fechavencimiento) : '-'}
                   </td>
-                  <td style={{ padding: '14px 16px' }}><Badge activo={c.activo} /></td>
+                  <td style={{ padding: '14px 16px' }}><Badge activo={c.activo} fechavencimiento={c.fechavencimiento} /></td>
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>
+                      <Btn variant="ghost" onClick={() => setViewTarget(c)} style={{ padding: '5px 12px', fontSize: 12 }}>
+                        Ver
+                      </Btn>
                       <Btn
                         variant="ghost"
                         disabled={!c.activo}
@@ -498,6 +587,67 @@ export function CuponesPage() {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
               <Btn variant="ghost" onClick={() => setEditTarget(null)}>Cancelar</Btn>
               <Btn onClick={handleEdit} disabled={editing}>{editing ? 'Guardando...' : 'Guardar cambios'}</Btn>
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      {/* ── Dialog: Ver cupon ── */}
+      <Dialog open={viewTarget !== null} title="Detalle de cupón" onClose={() => setViewTarget(null)} maxWidth={480}>
+        {viewTarget && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Código + estado */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>CÓDIGO</div>
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 20, fontWeight: 700, color: 'var(--btn-bg)' }}>{viewTarget.codigo}</div>
+              </div>
+              <Badge activo={viewTarget.activo} fechavencimiento={viewTarget.fechavencimiento} />
+            </div>
+
+            {/* Descuento */}
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>DESCUENTO</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'var(--border)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 999, background: 'var(--btn-bg)', width: `${viewTarget.descuentoporcentaje}%` }} />
+                </div>
+                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 18, fontWeight: 700, color: 'var(--btn-bg)', minWidth: 48, textAlign: 'right' }}>
+                  {viewTarget.descuentoporcentaje}%
+                </span>
+              </div>
+            </div>
+
+            {/* Fechas y cliente */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>VENCIMIENTO</div>
+                <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>
+                  {viewTarget.fechavencimiento ? fmt(viewTarget.fechavencimiento) : '—'}
+                </div>
+              </div>
+              <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>CLIENTE</div>
+                <div style={{ fontSize: 13, color: 'var(--text)' }}>
+                  {viewTarget.clientes ? `${viewTarget.clientes.nombre} ${viewTarget.clientes.apellido}` : 'General'}
+                </div>
+                {viewTarget.clientes && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{viewTarget.clientes.email}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Promoción */}
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>PROMOCIÓN ASOCIADA</div>
+              <div style={{ fontSize: 13, color: viewTarget.promociones ? 'var(--text)' : 'var(--text-muted)' }}>
+                {viewTarget.promociones ? viewTarget.promociones.nombre : 'Sin promoción'}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+              <Btn variant="ghost" onClick={() => setViewTarget(null)}>Cerrar</Btn>
             </div>
           </div>
         )}

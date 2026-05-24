@@ -369,9 +369,9 @@ export function PromocionesPage() {
                     <span style={{
                       fontSize: 11, fontFamily: 'DM Mono, monospace',
                       padding: '2px 8px', borderRadius: 999,
-                      background: p.esGeneral ? 'rgba(232,255,71,0.1)' : 'rgba(55,138,221,0.1)',
-                      color: p.esGeneral ? 'var(--btn-bg)' : '#378add',
-                      border: `1px solid ${p.esGeneral ? 'rgba(232,255,71,0.3)' : 'rgba(55,138,221,0.3)'}`,
+                      background: p.esGeneral ? 'var(--accent-dim)' : 'rgba(55,138,221,0.1)',
+                      color: p.esGeneral ? 'var(--accent-text)' : '#378add',
+                      border: `1px solid ${p.esGeneral ? 'var(--accent-border)' : 'rgba(55,138,221,0.3)'}`,
                     }}>
                       {p.esGeneral ? 'General' : 'Por producto'}
                     </span>
@@ -608,9 +608,9 @@ export function PromocionesPage() {
               <span style={{
                 flexShrink: 0, fontSize: 11, fontFamily: 'DM Mono, monospace',
                 padding: '3px 10px', borderRadius: 999,
-                background: viewTarget.esGeneral ? 'rgba(232,255,71,0.1)' : 'rgba(55,138,221,0.1)',
-                color: viewTarget.esGeneral ? 'var(--btn-bg)' : '#378add',
-                border: `1px solid ${viewTarget.esGeneral ? 'rgba(232,255,71,0.3)' : 'rgba(55,138,221,0.3)'}`,
+                background: viewTarget.esGeneral ? 'var(--accent-dim)' : 'rgba(55,138,221,0.1)',
+                color: viewTarget.esGeneral ? 'var(--accent-text)' : '#378add',
+                border: `1px solid ${viewTarget.esGeneral ? 'var(--accent-border)' : 'rgba(55,138,221,0.3)'}`,
               }}>
                 {viewTarget.esGeneral ? 'General' : 'Por producto'}
               </span>
