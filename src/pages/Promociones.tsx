@@ -4,6 +4,8 @@ import { useToast } from '../components/Toast'
 import { Dialog, ConfirmDialog, Btn } from '../components/Dialog'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+import { CustomDatePicker } from '../components/CustomDatePicker'
+import { exportPromocionesPdf } from '../utils/exportPdf'
 import { api } from '../services/api'
 
 const EMPTY: NuevaPromocion = {
@@ -53,6 +55,8 @@ export function PromocionesPage() {
   const [data, setData] = useState<Promocion[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filterDesde, setFilterDesde] = useState<Date | null>(null)
+  const [filterHasta, setFilterHasta] = useState<Date | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Promocion | null>(null)
   const [form, setForm] = useState<NuevaPromocion>(EMPTY)
@@ -87,9 +91,12 @@ export function PromocionesPage() {
   const [productos, setProductos] = useState<{ idproducto: number; nombre: string }[]>([])
   const [selectedProducto, setSelectedProducto] = useState('')
 
-  const filtered = search.trim()
-    ? data.filter((p) => p.nombre.toLowerCase().includes(search.toLowerCase()))
-    : data
+  const filtered = data.filter((p) => {
+    if (search.trim() && !p.nombre.toLowerCase().includes(search.toLowerCase())) return false
+    if (filterDesde && new Date(p.fechaHasta) < filterDesde) return false
+    if (filterHasta && new Date(p.fechaDesde) > filterHasta) return false
+    return true
+  })
 
   const sorted = [...filtered].sort((a, b) => {
   let valA: any, valB: any
@@ -307,13 +314,42 @@ export function PromocionesPage() {
       </div>
 
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', gap: 10 }}>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar promoción..."
-          style={inputStyle}
+          style={{ ...inputStyle, flex: 1 }}
         />
+        <CustomDatePicker
+          selected={filterDesde}
+          onChange={(date: Date | null) => setFilterDesde(date)}
+          selectsStart
+          startDate={filterDesde}
+          endDate={filterHasta}
+          placeholderText="Desde"
+          isClearable
+          width={130}
+        />
+        <CustomDatePicker
+          selected={filterHasta}
+          onChange={(date: Date | null) => setFilterHasta(date)}
+          selectsEnd
+          startDate={filterDesde}
+          endDate={filterHasta}
+          minDate={filterDesde ?? undefined}
+          placeholderText="Hasta"
+          isClearable
+          width={130}
+        />
+        <Btn
+          variant="ghost"
+          onClick={() => exportPromocionesPdf(sorted, { search, desde: filterDesde, hasta: filterHasta })}
+          disabled={sorted.length === 0}
+          style={{ color: '#a78bfa', borderColor: 'rgba(167,139,250,0.35)', background: 'rgba(167,139,250,0.08)', whiteSpace: 'nowrap' }}
+        >
+          ↓ PDF
+        </Btn>
       </div>
       {/* Table */}
       <div style={{ background: 'var(--surface)', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
