@@ -5,6 +5,8 @@ import { Dialog, ConfirmDialog, Btn } from '../components/Dialog'
 import { api } from '../services/api'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+import { CustomDatePicker } from '../components/CustomDatePicker'
+import { exportCuponesPdf } from '../utils/exportPdf'
 
 interface Cliente {
   idcliente: number
@@ -100,11 +102,16 @@ const readonlyStyle: React.CSSProperties = {
   background: 'var(--bg)',
 }
 
+type FiltroEstado = 'todos' | 'activo' | 'vencido' | 'anulado'
+
 export function CuponesPage() {
   const { toast } = useToast()
   const [cupones, setCupones] = useState<Cupon[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filterDesde, setFilterDesde] = useState<Date | null>(null)
+  const [filterHasta, setFilterHasta] = useState<Date | null>(null)
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos')
 
   // create
   const [createOpen, setCreateOpen] = useState(false)
@@ -255,16 +262,25 @@ export function CuponesPage() {
     }
   }
 
-  const filtered = search.trim()
-    ? cupones.filter((c) => {
-        const q = search.toLowerCase()
-        return (
-          c.codigo.toLowerCase().includes(q) ||
-          (c.clientes ? `${c.clientes.nombre} ${c.clientes.apellido}`.toLowerCase().includes(q) : false) ||
-          (c.promociones?.nombre.toLowerCase().includes(q) ?? false)
-        )
-      })
-    : cupones
+  const filtered = cupones.filter((c) => {
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      const matchText =
+        c.codigo.toLowerCase().includes(q) ||
+        (c.clientes ? `${c.clientes.nombre} ${c.clientes.apellido}`.toLowerCase().includes(q) : false) ||
+        (c.promociones?.nombre.toLowerCase().includes(q) ?? false)
+      if (!matchText) return false
+    }
+    if (filterDesde && c.fechavencimiento && new Date(c.fechavencimiento) < filterDesde) return false
+    if (filterHasta && c.fechavencimiento && new Date(c.fechavencimiento) > filterHasta) return false
+    if (filtroEstado !== 'todos') {
+      const vencido = c.activo && !!c.fechavencimiento && new Date(c.fechavencimiento) < new Date()
+      if (filtroEstado === 'activo' && (!c.activo || vencido)) return false
+      if (filtroEstado === 'vencido' && !vencido) return false
+      if (filtroEstado === 'anulado' && c.activo) return false
+    }
+    return true
+  })
 
   const sorted = [...filtered].sort((a, b) => {
     let valA: any, valB: any
@@ -284,7 +300,14 @@ export function CuponesPage() {
         valA = a.fechavencimiento ? new Date(a.fechavencimiento).getTime() : 0
         valB = b.fechavencimiento ? new Date(b.fechavencimiento).getTime() : 0
         break
-      case 'activo': valA = a.activo ? 1 : 0; valB = b.activo ? 1 : 0; break
+      case 'activo': {
+        const estadoVal = (c: Cupon) => {
+          if (!c.activo) return 0
+          if (c.fechavencimiento && new Date(c.fechavencimiento) < new Date()) return 1
+          return 2
+        }
+        valA = estadoVal(a); valB = estadoVal(b); break
+      }
     }
     if (valA < valB) return sortDir === 'asc' ? -1 : 1
     if (valA > valB) return sortDir === 'asc' ? 1 : -1
@@ -316,13 +339,52 @@ export function CuponesPage() {
         <Btn onClick={() => { setCreateForm(EMPTY_CREATE); setPromoSeleccionada(null); setCreateOpen(true) }}>+ Nuevo cupon</Btn>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', gap: 10 }}>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por código, cliente o promoción..."
-          style={inputStyle}
+          style={{ ...inputStyle, flex: 1 }}
         />
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value as FiltroEstado)}
+          style={{ ...inputStyle, width: 130, appearance: 'none', cursor: 'pointer' }}
+        >
+          <option value="todos">Todos</option>
+          <option value="activo">Activos</option>
+          <option value="vencido">Vencidos</option>
+          <option value="anulado">Anulados</option>
+        </select>
+        <CustomDatePicker
+          selected={filterDesde}
+          onChange={(date: Date | null) => setFilterDesde(date)}
+          selectsStart
+          startDate={filterDesde}
+          endDate={filterHasta}
+          placeholderText="Vence desde"
+          isClearable
+          width={140}
+        />
+        <CustomDatePicker
+          selected={filterHasta}
+          onChange={(date: Date | null) => setFilterHasta(date)}
+          selectsEnd
+          startDate={filterDesde}
+          endDate={filterHasta}
+          minDate={filterDesde ?? undefined}
+          placeholderText="Vence hasta"
+          isClearable
+          width={140}
+        />
+        <Btn
+          variant="ghost"
+          onClick={() => exportCuponesPdf(sorted, { search, estado: filtroEstado, desde: filterDesde, hasta: filterHasta })}
+          disabled={sorted.length === 0}
+          style={{ color: '#a78bfa', borderColor: 'rgba(167,139,250,0.35)', background: 'rgba(167,139,250,0.08)', whiteSpace: 'nowrap' }}
+        >
+          ↓ PDF
+        </Btn>
       </div>
 
       {/* Tabla */}
