@@ -408,13 +408,13 @@ export function PromocionesPage() {
                       <Btn variant="ghost" onClick={() => setViewTarget(p)} style={{ padding: '5px 12px', fontSize: 12 }}>Ver</Btn>
                       <Btn
                         variant="ghost"
-                        //disabled={p.activa}
+                      disabled={p.activa}
                         onClick={() => openEdit(p)}
                         style={{
                           padding: '5px 12px',
                           fontSize: 12,
-                          // opacity: p.activa ? 0.5 : 1,
-                          // cursor: p.activa ? 'not-allowed' : 'pointer'
+                          opacity: p.activa ? 0.5 : 1,
+                          cursor: p.activa ? 'not-allowed' : 'pointer'
                         }}
                       >
                         Editar
