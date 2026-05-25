@@ -26,9 +26,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const colors: Record<ToastType, string> = {
-    success: '#4ade80',
-    error: '#f87171',
-    info: '#e8ff47',
+    success: 'var(--success)',
+    error: 'var(--danger)',
+    info: 'var(--accent)',
   }
 
   return (
@@ -40,9 +40,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       }}>
         {toasts.map((t) => (
           <div key={t.id} style={{
-            background: '#18181b',
+            background: 'var(--surface)',
             border: `1px solid ${colors[t.type]}`,
-            color: '#f4f4f5',
+            color: 'var(--text)',
             padding: '10px 16px',
             borderRadius: 8,
             fontSize: 13,
@@ -52,7 +52,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             minWidth: 240,
             maxWidth: 360,
             animation: 'slideIn 0.2s ease',
-            boxShadow: `0 0 20px ${colors[t.type]}22`,
           }}>
             <span style={{ color: colors[t.type], fontSize: 16 }}>
               {t.type === 'success' ? '✓' : t.type === 'error' ? '✗' : '·'}

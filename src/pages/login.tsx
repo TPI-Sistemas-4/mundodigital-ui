@@ -33,11 +33,11 @@ export function LoginPage() {
   }, [navigate])
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f10' }}>
-      <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, padding: 32, width: '100%', maxWidth: 380 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 32, width: '100%', maxWidth: 380 }}>
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>MUNDODIGITAL S.A.</div>
-          <h1 style={{ fontSize: 20, fontWeight: 500, color: '#f4f4f5' }}>Marketing <span style={{ color: '#e8ff47' }}>G4</span></h1>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>MUNDODIGITAL S.A.</div>
+          <h1 style={{ fontSize: 20, fontWeight: 500, color: 'var(--text)' }}>Marketing <span style={{ color: 'var(--btn-bg)' }}>G4</span></h1>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <input
@@ -57,7 +57,7 @@ export function LoginPage() {
               onClick={() => setShowPassword((v) => !v)}
               style={{
                 position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', color: '#71717a',
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
                 fontSize: 16, padding: 0, lineHeight: 1,
               }}
             >
@@ -85,7 +85,7 @@ export function LoginPage() {
 }
 
 const inputStyle: React.CSSProperties = {
-  background: '#0f0f10', border: '1px solid #2e2e35', borderRadius: 8,
-  padding: '10px 12px', color: '#f4f4f5', fontSize: 14, width: '100%',
+  background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8,
+  padding: '10px 12px', color: 'var(--text)', fontSize: 14, width: '100%',
   outline: 'none', fontFamily: 'DM Sans, sans-serif',
 }

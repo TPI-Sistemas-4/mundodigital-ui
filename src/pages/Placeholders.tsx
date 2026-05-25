@@ -4,16 +4,16 @@ function ComingSoon({ title, icon, desc }: { title: string; icon: string; desc: 
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
-        <h1 style={{ fontSize: 24, fontWeight: 500, color: '#f4f4f5' }}>{title}</h1>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
+        <h1 style={{ fontSize: 24, fontWeight: 500, color: 'var(--text)' }}>{title}</h1>
       </div>
       <div style={{
-        background: '#18181b', border: '1px dashed #2e2e35', borderRadius: 12,
+        background: 'var(--surface)', border: '1px dashed var(--border)', borderRadius: 12,
         padding: 60, textAlign: 'center',
       }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
-        <div style={{ color: '#71717a', fontSize: 14 }}>{desc}</div>
-        <div style={{ marginTop: 8, fontSize: 12, color: '#3f3f46', fontFamily: 'DM Mono, monospace' }}>Sprint 2</div>
+        <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>{desc}</div>
+        <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-dim)', fontFamily: 'DM Mono, monospace' }}>Sprint 2</div>
       </div>
     </div>
   )

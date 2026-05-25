@@ -6,9 +6,11 @@ import { CuponesPage } from './pages/Cupones';
 import { PuntosPage, ReportesPage } from './pages/Placeholders'
 import { PrivateRoute } from './components/PrivateRoute'
 import { LoginPage } from './pages/login'
+import { ThemeProvider } from './context/ThemeContext'
 
 export default function App() {
   return (
+    <ThemeProvider>
     <ToastProvider>
       <BrowserRouter>
         <Routes>
@@ -23,5 +25,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </ToastProvider>
+    </ThemeProvider>
   )
 }

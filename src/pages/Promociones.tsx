@@ -39,10 +39,10 @@ function Badge({ activa }: { activa: boolean }) {
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '2px 10px', borderRadius: 999, fontSize: 12, fontFamily: 'DM Mono, monospace',
       background: activa ? 'rgba(74,222,128,0.1)' : 'rgba(113,113,122,0.1)',
-      color: activa ? '#4ade80' : '#71717a',
+      color: activa ? 'var(--success)' : 'var(--text-muted)',
       border: `1px solid ${activa ? 'rgba(74,222,128,0.3)' : 'rgba(113,113,122,0.3)'}`,
     }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: activa ? '#4ade80' : '#71717a' }} />
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: activa ? 'var(--success)' : 'var(--text-muted)' }} />
       {activa ? 'Activa' : 'Inactiva'}
     </span>
   )
@@ -142,6 +142,7 @@ export function PromocionesPage() {
     { label: 'Hasta', key: 'fechahasta' },
     { label: 'Tipo', key: null },
     { label: 'Estado', key: 'activa' },
+    { label: 'Activa', key: null },
     { label: '', key: null },
   ]
 
@@ -296,9 +297,9 @@ export function PromocionesPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
         <div>
-          <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, color: '#f4f4f5' }}>Promociones</h1>
-          <p style={{ color: '#71717a', fontSize: 13, marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
+          <h1 style={{ fontSize: 24, fontWeight: 500, color: 'var(--text)' }}>Promociones</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
             {data.length} promoción{data.length !== 1 ? 'es' : ''} · {data.filter((p) => p.activa).length} activas
           </p>
         </div>
@@ -315,14 +316,14 @@ export function PromocionesPage() {
         />
       </div>
       {/* Table */}
-      <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>Cargando...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando...</div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             {search.trim()
               ? `Sin resultados para "${search}"`
-              : <><span>No hay promociones. </span><button onClick={openNew} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer' }}>Creá la primera</button></>}
+              : <><span>No hay promociones. </span><button onClick={openNew} style={{ color: 'var(--btn-bg)', background: 'none', border: 'none', cursor: 'pointer' }}>Creá la primera</button></>}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -334,7 +335,7 @@ export function PromocionesPage() {
                     onClick={() => handleSort(h.key)}
                     style={{
                       padding: '12px 16px', textAlign: 'left', fontSize: 11,
-                      color: sortKey === h.key ? '#e8ff47' : '#71717a',
+                      color: sortKey === h.key ? 'var(--btn-bg)' : 'var(--text-muted)',
                       fontWeight: 500, fontFamily: 'DM Mono, monospace',
                       whiteSpace: 'nowrap',
                       cursor: h.key ? 'pointer' : 'default',
@@ -356,42 +357,64 @@ export function PromocionesPage() {
               {sorted.map((p, i) => (
                 <tr key={p.idPromocion}
                   style={{ borderBottom: i < data.length - 1 ? '1px solid #2e2e35' : 'none', transition: 'background 0.1s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#232328')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: '#71717a' }}>#{p.idPromocion}</td>
-                  <td style={{ padding: '14px 16px', fontWeight: 500, color: '#f4f4f5' }}>{p.nombre}</td>
-                  <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion || '—'}</td>
-                  <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13, whiteSpace: 'nowrap' }}>{fmt(p.fechaDesde)}</td>
-                  <td style={{ padding: '14px 16px', color: '#a1a1aa', fontSize: 13, whiteSpace: 'nowrap' }}>{fmt(p.fechaHasta)}</td>
+                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: 'var(--text-muted)' }}>#{p.idPromocion}</td>
+                  <td style={{ padding: '14px 16px', fontWeight: 500, color: 'var(--text)' }}>{p.nombre}</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion || '—'}</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>{fmt(p.fechaDesde)}</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>{fmt(p.fechaHasta)}</td>
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{
                       fontSize: 11, fontFamily: 'DM Mono, monospace',
                       padding: '2px 8px', borderRadius: 999,
-                      background: p.esGeneral ? 'rgba(232,255,71,0.1)' : 'rgba(55,138,221,0.1)',
-                      color: p.esGeneral ? '#e8ff47' : '#378add',
-                      border: `1px solid ${p.esGeneral ? 'rgba(232,255,71,0.3)' : 'rgba(55,138,221,0.3)'}`,
+                      background: p.esGeneral ? 'var(--accent-dim)' : 'rgba(55,138,221,0.1)',
+                      color: p.esGeneral ? 'var(--accent-text)' : '#378add',
+                      border: `1px solid ${p.esGeneral ? 'var(--accent-border)' : 'rgba(55,138,221,0.3)'}`,
                     }}>
                       {p.esGeneral ? 'General' : 'Por producto'}
                     </span>
                   </td>
                   <td style={{ padding: '14px 16px' }}><Badge activa={p.activa} />
-                    <div style={{ marginTop: 4, fontSize: 11, color: p.esAplicable ? '#4ade80' : '#71717a' }}>
+                    <div style={{ marginTop: 4, fontSize: 11, color: p.esAplicable ? 'var(--success)' : 'var(--text-muted)' }}>
                       {p.esAplicable ? 'Aplicable hoy' : 'No aplicable'}
                     </div>
                   </td>
                   <td style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await promocionesService.update(p.idPromocion, { activa: !p.activa })
+                            toast(p.activa ? 'Promoción desactivada' : 'Promoción activada', 'success')
+                            load()
+                          } catch (e: any) { toast(e.message, 'error') }
+                        }}
+                        title={p.activa ? 'Desactivar' : 'Activar'}
+                        style={{
+                          width: 36, height: 20, borderRadius: 999, border: 'none', cursor: 'pointer',
+                          background: p.activa ? 'var(--toggle-active)' : 'var(--border)', position: 'relative',
+                          transition: 'background 0.2s', flexShrink: 0,
+                        }}
+                      >
+                        <span style={{
+                          position: 'absolute', top: 2, left: p.activa ? 18 : 2,
+                          width: 16, height: 16, borderRadius: '50%',
+                          background: p.activa ? 'var(--bg)' : 'var(--text-muted)',
+                          transition: 'left 0.2s',
+                        }} />
+                      </button>
                       <Btn variant="ghost" onClick={() => setViewTarget(p)} style={{ padding: '5px 12px', fontSize: 12 }}>Ver</Btn>
                       <Btn
                         variant="ghost"
-                        //disabled={p.activa}
+                      disabled={p.activa}
                         onClick={() => openEdit(p)}
                         style={{
                           padding: '5px 12px',
                           fontSize: 12,
-                          // opacity: p.activa ? 0.5 : 1,
-                          // cursor: p.activa ? 'not-allowed' : 'pointer'
+                          opacity: p.activa ? 0.5 : 1,
+                          cursor: p.activa ? 'not-allowed' : 'pointer'
                         }}
                       >
                         Editar
@@ -399,7 +422,7 @@ export function PromocionesPage() {
                       <Btn variant="ghost" onClick={() => {
                         if (p.activa) { toast('No se puede eliminar una promoción activa. Desactivala primero.', 'error'); return }
                         setDeleteId(p.idPromocion)
-                      }} style={{ padding: '5px 12px', fontSize: 12, color: '#f87171', borderColor: 'rgba(248,113,113,0.3)' }}>Eliminar</Btn>
+                      }} style={{ padding: '5px 12px', fontSize: 12, color: 'var(--danger)', borderColor: 'rgba(248,113,113,0.3)' }}>Eliminar</Btn>
                     </div>
                   </td>
                 </tr>
@@ -459,7 +482,7 @@ export function PromocionesPage() {
 
           {/* Detalle de productos */}
           <div style={{ borderTop: '1px solid #2e2e35', paddingTop: 16 }}>
-            <div style={{ fontSize: 12, color: '#71717a', fontWeight: 500, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 12 }}>
               Descuento
             </div>
 
@@ -472,25 +495,25 @@ export function PromocionesPage() {
                   setForm((f) => ({ ...f, esGeneral: e.target.checked, detalle: [] }))
                   setSelectedProducto('')
                 }}
-                style={{ width: 16, height: 16, accentColor: '#e8ff47' }}
+                style={{ width: 16, height: 16, accentColor: 'var(--btn-bg)' }}
               />
-              <span style={{ fontSize: 13, color: '#a1a1aa' }}>Descuento general (aplica a todos los productos)</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Descuento general (aplica a todos los productos)</span>
             </label>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, background: '#0f0f10', borderRadius: 8, padding: 12, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, background: 'var(--bg)', borderRadius: 8, padding: 12, marginBottom: 12 }}>
 
               {/* Slider siempre visible */}
               <Field label={`Descuento a aplicar: ${nuevoDetalle.descuentoPorcentaje}%`}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 12, color: '#71717a', minWidth: 24 }}>1%</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 24 }}>1%</span>
                   <input
                     type="range" min={1} max={90} step={1}
                     value={nuevoDetalle.descuentoPorcentaje}
                     onChange={(e) => setNuevoDetalle((d) => ({ ...d, descuentoPorcentaje: Number(e.target.value) }))}
-                    style={{ flex: 1, accentColor: '#e8ff47' }}
+                    style={{ flex: 1, accentColor: 'var(--btn-bg)' }}
                   />
-                  <span style={{ fontSize: 12, color: '#71717a', minWidth: 28 }}>90%</span>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, fontWeight: 500, color: '#e8ff47', minWidth: 40, textAlign: 'right' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28 }}>90%</span>
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, fontWeight: 500, color: 'var(--btn-bg)', minWidth: 40, textAlign: 'right' }}>
                     {nuevoDetalle.descuentoPorcentaje}%
                   </span>
                 </div>
@@ -536,17 +559,17 @@ export function PromocionesPage() {
                 {(form.detalle ?? []).map((d, index) => (
                   <div key={`${d.idProducto}-${index}`} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '8px 12px', background: '#0f0f10', borderRadius: 8,
+                    padding: '8px 12px', background: 'var(--bg)', borderRadius: 8,
                     border: '1px solid #2e2e35'
                   }}>
-                    <span style={{ fontSize: 13, color: '#f4f4f5' }}>#{d.idProducto} — {d.nombreProducto}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text)' }}>#{d.idProducto} — {d.nombreProducto}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: '#e8ff47' }}>
+                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--btn-bg)' }}>
                         {d.descuentoPorcentaje}%
                       </span>
                       <button
                         onClick={() => setForm((f) => ({ ...f, detalle: f.detalle?.filter((x) => x.idProducto !== d.idProducto) }))}
-                        style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}
                       >×</button>
                     </div>
                   </div>
@@ -555,15 +578,6 @@ export function PromocionesPage() {
             )}
           </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={form.activa}
-              onChange={(e) => setForm((f) => ({ ...f, activa: e.target.checked }))}
-              style={{ width: 16, height: 16, accentColor: '#e8ff47' }}
-            />
-            <span style={{ fontSize: 13, color: '#a1a1aa' }}>Promoción activa</span>
-          </label>
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid #2e2e35' }}>
             <Btn variant="ghost" onClick={() => setFormOpen(false)}>Cancelar</Btn>
@@ -588,15 +602,15 @@ export function PromocionesPage() {
             {/* Nombre + tipo */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>NOMBRE</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5' }}>{viewTarget.nombre}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>NOMBRE</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>{viewTarget.nombre}</div>
               </div>
               <span style={{
                 flexShrink: 0, fontSize: 11, fontFamily: 'DM Mono, monospace',
                 padding: '3px 10px', borderRadius: 999,
-                background: viewTarget.esGeneral ? 'rgba(232,255,71,0.1)' : 'rgba(55,138,221,0.1)',
-                color: viewTarget.esGeneral ? '#e8ff47' : '#378add',
-                border: `1px solid ${viewTarget.esGeneral ? 'rgba(232,255,71,0.3)' : 'rgba(55,138,221,0.3)'}`,
+                background: viewTarget.esGeneral ? 'var(--accent-dim)' : 'rgba(55,138,221,0.1)',
+                color: viewTarget.esGeneral ? 'var(--accent-text)' : '#378add',
+                border: `1px solid ${viewTarget.esGeneral ? 'var(--accent-border)' : 'rgba(55,138,221,0.3)'}`,
               }}>
                 {viewTarget.esGeneral ? 'General' : 'Por producto'}
               </span>
@@ -605,54 +619,54 @@ export function PromocionesPage() {
             {/* Descripción */}
             {viewTarget.descripcion && (
               <div>
-                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>DESCRIPCIÓN</div>
-                <div style={{ fontSize: 13, color: '#a1a1aa', lineHeight: 1.6 }}>{viewTarget.descripcion}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>DESCRIPCIÓN</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{viewTarget.descripcion}</div>
               </div>
             )}
 
             {/* Fechas */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div style={{ background: '#0f0f10', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35' }}>
-                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>FECHA DESDE</div>
-                <div style={{ fontSize: 14, color: '#f4f4f5', fontFamily: 'DM Mono, monospace' }}>{fmt(viewTarget.fechaDesde)}</div>
+              <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>FECHA DESDE</div>
+                <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{fmt(viewTarget.fechaDesde)}</div>
               </div>
-              <div style={{ background: '#0f0f10', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35' }}>
-                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>FECHA HASTA</div>
-                <div style={{ fontSize: 14, color: '#f4f4f5', fontFamily: 'DM Mono, monospace' }}>{fmt(viewTarget.fechaHasta)}</div>
+              <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>FECHA HASTA</div>
+                <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>{fmt(viewTarget.fechaHasta)}</div>
               </div>
             </div>
 
             {/* Estado */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <Badge activa={viewTarget.activa} />
-              <span style={{ fontSize: 12, color: viewTarget.esAplicable ? '#4ade80' : '#71717a' }}>
+              <span style={{ fontSize: 12, color: viewTarget.esAplicable ? 'var(--success)' : 'var(--text-muted)' }}>
                 {viewTarget.esAplicable ? '● Aplicable hoy' : '○ No aplicable hoy'}
               </span>
             </div>
 
             {/* Descuento */}
             <div>
-              <div style={{ fontSize: 11, color: '#71717a', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
                 {viewTarget.esGeneral ? 'DESCUENTO GENERAL' : 'PRODUCTOS CON DESCUENTO'}
               </div>
               {viewTarget.esGeneral ? (
-                <div style={{ background: '#0f0f10', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35', display: 'inline-block' }}>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 22, fontWeight: 700, color: '#e8ff47' }}>
+                <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35', display: 'inline-block' }}>
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 22, fontWeight: 700, color: 'var(--btn-bg)' }}>
                     {viewTarget.detalle?.[0]?.descuentoPorcentaje ?? '—'}%
                   </span>
-                  <span style={{ fontSize: 12, color: '#71717a', marginLeft: 8 }}>sobre todos los productos</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>sobre todos los productos</span>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {(viewTarget.detalle ?? []).length === 0 ? (
-                    <span style={{ fontSize: 13, color: '#71717a' }}>Sin productos asignados</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Sin productos asignados</span>
                   ) : (viewTarget.detalle ?? []).map((d) => (
                     <div key={d.idProducto} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '8px 12px', background: '#0f0f10', borderRadius: 8, border: '1px solid #2e2e35',
+                      padding: '8px 12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid #2e2e35',
                     }}>
-                      <span style={{ fontSize: 13, color: '#f4f4f5' }}>#{d.idProducto} — {d.nombreProducto}</span>
-                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: '#e8ff47' }}>{d.descuentoPorcentaje}%</span>
+                      <span style={{ fontSize: 13, color: 'var(--text)' }}>#{d.idProducto} — {d.nombreProducto}</span>
+                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--btn-bg)' }}>{d.descuentoPorcentaje}%</span>
                     </div>
                   ))}
                 </div>
@@ -660,7 +674,7 @@ export function PromocionesPage() {
             </div>
 
             {/* Última actualización */}
-            <div style={{ paddingTop: 8, borderTop: '1px solid #2e2e35', fontSize: 11, color: '#52525b' }}>
+            <div style={{ paddingTop: 8, borderTop: '1px solid #2e2e35', fontSize: 11, color: 'var(--text-muted)' }}>
               Última actualización: {fmt(viewTarget.updatedat)}
             </div>
 
@@ -677,18 +691,18 @@ export function PromocionesPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>{label}</label>
+      <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</label>
       {children}
     </div>
   )
 }
 
 const inputStyle: React.CSSProperties = {
-  background: '#0f0f10',
-  border: '1px solid #2e2e35',
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
   borderRadius: 8,
   padding: '9px 12px',
-  color: '#f4f4f5',
+  color: 'var(--text)',
   fontSize: 14,
   width: '100%',
   outline: 'none',
