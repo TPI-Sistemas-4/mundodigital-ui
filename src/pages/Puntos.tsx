@@ -14,7 +14,7 @@ function fmtPesos(n: number | string) {
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>{label}</label>
+      <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</label>
       {children}
       {hint && <span style={{ fontSize: 11, color: '#52525b' }}>{hint}</span>}
     </div>
@@ -22,11 +22,11 @@ function Field({ label, children, hint }: { label: string; children: React.React
 }
 
 const inputStyle: React.CSSProperties = {
-  background: '#0f0f10',
-  border: '1px solid #2e2e35',
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
   borderRadius: 8,
   padding: '9px 12px',
-  color: '#f4f4f5',
+  color: 'var(--text)',
   fontSize: 14,
   width: '100%',
   outline: 'none',
@@ -137,12 +137,12 @@ export function PuntosPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
         <div>
-          <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, color: '#f4f4f5' }}>Puntos</h1>
-          <p style={{ color: '#71717a', fontSize: 13, marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', marginBottom: 4 }}>G4 · MARKETING</div>
+          <h1 style={{ fontSize: 24, fontWeight: 500, color: 'var(--text)' }}>Puntos</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
             {saldos.length} cliente{saldos.length !== 1 ? 's' : ''} con puntos
             {regla && (
-              <span style={{ marginLeft: 10, fontFamily: 'DM Mono, monospace', color: '#e8ff47', fontSize: 11, padding: '2px 8px', background: 'rgba(232,255,71,0.08)', borderRadius: 999, border: '1px solid rgba(232,255,71,0.2)' }}>
+              <span style={{ marginLeft: 10, fontFamily: 'DM Mono, monospace', color: 'var(--btn-bg)', fontSize: 11, padding: '2px 8px', background: 'rgba(232,255,71,0.08)', borderRadius: 999, border: '1px solid rgba(232,255,71,0.2)' }}>
                 Regla: {regla}
               </span>
             )}
@@ -152,22 +152,22 @@ export function PuntosPage() {
       </div>
 
       {/* Tabla saldos */}
-      <div style={{ background: '#18181b', border: '1px solid #2e2e35', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>Cargando...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando...</div>
         ) : saldos.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             No hay puntos registrados.{' '}
-            <button onClick={() => setFormOpen(true)} style={{ color: '#e8ff47', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => setFormOpen(true)} style={{ color: 'var(--btn-bg)', background: 'none', border: 'none', cursor: 'pointer' }}>
               Registra el primero
             </button>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #2e2e35' }}>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Cliente', 'Email', 'Saldo de puntos', ''].map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, color: '#71717a', fontWeight: 500, fontFamily: 'DM Mono, monospace' }}>{h}</th>
+                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, fontFamily: 'DM Mono, monospace' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -175,16 +175,16 @@ export function PuntosPage() {
               {saldos.map((s, i) => (
                 <tr
                   key={s.cliente.idcliente}
-                  style={{ borderBottom: i < saldos.length - 1 ? '1px solid #2e2e35' : 'none', transition: 'background 0.1s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#232328')}
+                  style={{ borderBottom: i < saldos.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.1s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <td style={{ padding: '14px 16px', color: '#f4f4f5', fontWeight: 500 }}>
+                  <td style={{ padding: '14px 16px', color: 'var(--text)', fontWeight: 500 }}>
                     {s.cliente.nombre} {s.cliente.apellido}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#71717a', fontSize: 13 }}>{s.cliente.email}</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-muted)', fontSize: 13 }}>{s.cliente.email}</td>
                   <td style={{ padding: '14px 16px' }}>
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 15, color: '#e8ff47' }}>
+                    <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 15, color: 'var(--btn-bg)' }}>
                       {s.saldo.toLocaleString('es-AR')} pts
                     </span>
                   </td>
@@ -216,36 +216,36 @@ export function PuntosPage() {
                 style={{ ...inputStyle, paddingRight: buscandoVenta ? 36 : 12 }}
               />
               {buscandoVenta && (
-                <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#71717a' }}>...</span>
+                <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--text-muted)' }}>...</span>
               )}
             </div>
           </Field>
 
           {/* Info de la venta — se muestra al encontrarla */}
           {ventaPreview && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#0f0f10', borderRadius: 10, padding: 14, border: '1px solid #2e2e35' }}>
-              <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'DM Mono, monospace', marginBottom: 2 }}>DATOS DE LA VENTA</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg)', borderRadius: 10, padding: 14, border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', marginBottom: 2 }}>DATOS DE LA VENTA</div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
                   <div style={{ fontSize: 11, color: '#52525b', marginBottom: 3 }}>Cliente</div>
-                  <div style={{ fontSize: 13, color: '#f4f4f5', fontWeight: 500 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>
                     {ventaPreview.cliente.nombre} {ventaPreview.cliente.apellido}
                   </div>
-                  <div style={{ fontSize: 11, color: '#71717a' }}>{ventaPreview.cliente.email}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ventaPreview.cliente.email}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, color: '#52525b', marginBottom: 3 }}>Fecha</div>
-                  <div style={{ fontSize: 13, color: '#a1a1aa', fontFamily: 'DM Mono, monospace' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'DM Mono, monospace' }}>
                     {ventaPreview.fechaventa ? fmt(ventaPreview.fechaventa) : '-'}
                   </div>
                 </div>
               </div>
 
-              <div style={{ borderTop: '1px solid #2e2e35', paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: 11, color: '#52525b', marginBottom: 3 }}>Total de la venta</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#f4f4f5', fontFamily: 'DM Mono, monospace' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>
                     {fmtPesos(ventaPreview.total)}
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export function PuntosPage() {
                 {/* Preview puntos */}
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 11, color: '#52525b', marginBottom: 3 }}>Puntos a otorgar</div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: puntosPreview > 0 ? '#e8ff47' : '#3f3f46', fontFamily: 'DM Mono, monospace' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: puntosPreview > 0 ? 'var(--btn-bg)' : '#3f3f46', fontFamily: 'DM Mono, monospace' }}>
                     {puntosPreview > 0 ? `+${puntosPreview} pts` : '—'}
                   </div>
                 </div>
@@ -261,11 +261,11 @@ export function PuntosPage() {
 
               {/* Productos */}
               {ventaPreview.detalleventas.length > 0 && (
-                <div style={{ borderTop: '1px solid #2e2e35', paddingTop: 10 }}>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
                   <div style={{ fontSize: 11, color: '#52525b', marginBottom: 8 }}>PRODUCTOS ({ventaPreview.detalleventas.length})</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {ventaPreview.detalleventas.map(d => (
-                      <div key={d.iddetalle} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#a1a1aa' }}>
+                      <div key={d.iddetalle} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
                         <span>#{d.idproducto} · x{d.cantidad}</span>
                         <span style={{ fontFamily: 'DM Mono, monospace' }}>{fmtPesos(Number(d.preciounitario) * d.cantidad)}</span>
                       </div>
@@ -278,12 +278,12 @@ export function PuntosPage() {
 
           {/* Mensaje si no hay venta y se escribió algo */}
           {!ventaPreview && idventaInput && !buscandoVenta && (
-            <div style={{ fontSize: 12, color: '#f87171', padding: '8px 12px', background: 'rgba(248,113,113,0.05)', borderRadius: 8, border: '1px solid rgba(248,113,113,0.2)' }}>
+            <div style={{ fontSize: 12, color: 'var(--danger)', padding: '8px 12px', background: 'rgba(248,113,113,0.05)', borderRadius: 8, border: '1px solid rgba(248,113,113,0.2)' }}>
               No se encontro la venta #{idventaInput}
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid #2e2e35' }}>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
             <Btn variant="ghost" onClick={() => setFormOpen(false)}>Cancelar</Btn>
             <Btn onClick={handleRegistrar} disabled={saving || !ventaPreview || puntosPreview <= 0}>
               {saving ? 'Registrando...' : ventaPreview && puntosPreview > 0 ? `Otorgar +${puntosPreview} pts` : 'Otorgar puntos'}
@@ -295,18 +295,18 @@ export function PuntosPage() {
       {/* Dialog historial */}
       <Dialog open={historialOpen} title="Historial de puntos" onClose={() => { setHistorialOpen(false); setHistorialTarget(null) }} maxWidth={560}>
         {loadingHistorial ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#71717a' }}>Cargando...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando...</div>
         ) : historialTarget && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>CLIENTE</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5' }}>{historialTarget.cliente.nombre} {historialTarget.cliente.apellido}</div>
-                <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>{historialTarget.cliente.email}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>CLIENTE</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>{historialTarget.cliente.nombre} {historialTarget.cliente.apellido}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{historialTarget.cliente.email}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>SALDO TOTAL</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 24, fontWeight: 700, color: '#e8ff47' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>SALDO TOTAL</div>
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 24, fontWeight: 700, color: 'var(--btn-bg)' }}>
                   {historialTarget.saldo.toLocaleString('es-AR')} pts
                 </div>
               </div>
@@ -318,20 +318,20 @@ export function PuntosPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto' }}>
               {historialTarget.movimientos.length === 0 ? (
-                <div style={{ color: '#71717a', fontSize: 13, textAlign: 'center', padding: 20 }}>Sin movimientos</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: 20 }}>Sin movimientos</div>
               ) : historialTarget.movimientos.map(m => (
                 <div key={m.idpunto} style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '10px 14px', background: '#0f0f10', borderRadius: 8, border: '1px solid #2e2e35',
+                  padding: '10px 14px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)',
                 }}>
                   <div>
-                    <div style={{ fontSize: 13, color: '#f4f4f5' }}>{m.concepto}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text)' }}>{m.concepto}</div>
                     <div style={{ fontSize: 11, color: '#52525b', marginTop: 3, fontFamily: 'DM Mono, monospace' }}>
                       {m.fecha ? fmt(m.fecha) : '—'}
                       {m.ventas && <span style={{ marginLeft: 8 }}>· Venta #{m.ventas.idventa} · {fmtPesos(Number(m.ventas.total))}</span>}
                     </div>
                   </div>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 14, color: '#4ade80' }}>
+                  <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 14, color: 'var(--success)' }}>
                     +{m.puntosotorgados} pts
                   </span>
                 </div>
