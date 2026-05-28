@@ -3,8 +3,9 @@ import { Layout } from './components/Layout'
 import { ToastProvider } from './components/Toast'
 import { PromocionesPage } from './pages/Promociones'
 import { CuponesPage } from './pages/Cupones';
-import { PuntosPage, ReportesPage } from './pages/Placeholders'
 import { PrivateRoute } from './components/PrivateRoute'
+import { PuntosPage } from './pages/Puntos'
+import { ReportesPage } from './pages/Placeholders'
 import { LoginPage } from './pages/login'
 import { ThemeProvider } from './context/ThemeContext'
 
