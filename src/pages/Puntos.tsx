@@ -426,7 +426,7 @@ export function PuntosPage() {
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>Puntos a otorgar</div>
                   <div style={{ fontSize: 22, fontWeight: 700, color: puntosPreview > 0 ? 'var(--btn-bg)' : 'var(--text-muted)', fontFamily: 'DM Mono, monospace' }}>
-                    {puntosPreview > 0 ? `+${puntosPreview} pts` : '—'}
+                    {puntosPreview > 0 ? `+${puntosPreview} pts` : '-'}
                   </div>
                 </div>
               </div>
@@ -534,10 +534,9 @@ export function PuntosPage() {
                     {consultaData.ultimosMovimientos.map(m => (
                       <div key={m.idpunto} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
                         <div>
-                          <div style={{ fontSize: 12, color: 'var(--text)' }}>{m.concepto}</div>
                           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'DM Mono, monospace' }}>
-                            {m.fecha ? fmt(m.fecha) : '—'}
-                            {m.ventas && <span style={{ marginLeft: 6 }}>· Venta #{m.ventas.idventa}</span>}
+                            {m.fecha ? fmt(m.fecha) : '-'}
+                            {m.ventas && <span style={{ marginLeft: 8 }}>· Venta #{m.ventas.idventa} · {fmtPesos(Number(m.ventas.total))}</span>}
                           </div>
                         </div>
                         <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 13, color: 'var(--success)' }}>
@@ -585,9 +584,8 @@ export function PuntosPage() {
               ) : historialTarget.movimientos.map(m => (
                 <div key={m.idpunto} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
                   <div>
-                    <div style={{ fontSize: 13, color: 'var(--text)' }}>{m.concepto}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'DM Mono, monospace' }}>
-                      {m.fecha ? fmt(m.fecha) : '—'}
+                      {m.fecha ? fmt(m.fecha) : '-'}
                       {m.ventas && <span style={{ marginLeft: 8 }}>· Venta #{m.ventas.idventa} · {fmtPesos(Number(m.ventas.total))}</span>}
                     </div>
                   </div>

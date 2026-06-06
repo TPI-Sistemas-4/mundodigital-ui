@@ -686,7 +686,7 @@ export function CuponesPage() {
               <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid var(--border)' }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>VENCIMIENTO</div>
                 <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'DM Mono, monospace' }}>
-                  {viewTarget.fechavencimiento ? fmt(viewTarget.fechavencimiento) : '—'}
+                  {viewTarget.fechavencimiento ? fmt(viewTarget.fechavencimiento) : '-'}
                 </div>
               </div>
               <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid var(--border)' }}>
