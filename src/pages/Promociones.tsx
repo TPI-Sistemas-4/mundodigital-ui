@@ -197,7 +197,7 @@ export function PromocionesPage() {
       updatedat: p.updatedat,
       detalle: (p.detalle ?? []).map((d: any) => ({
         idProducto: d.idproducto ?? d.idProducto,
-        nombreProducto: d.productos?.nombre ?? d.nombreProducto ?? '—',
+        nombreProducto: d.productos?.nombre ?? d.nombreProducto ?? '-',
         descuentoPorcentaje: d.descuentoporcentaje ?? d.descuentoPorcentaje,
       })),
     })
@@ -398,7 +398,7 @@ export function PromocionesPage() {
                 >
                   <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: 'var(--text-muted)' }}>#{p.idPromocion}</td>
                   <td style={{ padding: '14px 16px', fontWeight: 500, color: 'var(--text)' }}>{p.nombre}</td>
-                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion || '—'}</td>
+                  <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descripcion || '-'}</td>
                   <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>{fmt(p.fechaDesde)}</td>
                   <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>{fmt(p.fechaHasta)}</td>
                   <td style={{ padding: '14px 16px' }}>
@@ -581,7 +581,7 @@ export function PromocionesPage() {
                     {productos
                       .filter((p) => !form.detalle?.some((d) => d.idProducto === p.idproducto))
                       .map((p) => (
-                        <option key={p.idproducto} value={p.idproducto}>#{p.idproducto} — {p.nombre}</option>
+                        <option key={p.idproducto} value={p.idproducto}>#{p.idproducto} - {p.nombre}</option>
                       ))
                     }
                   </select>
@@ -598,7 +598,7 @@ export function PromocionesPage() {
                     padding: '8px 12px', background: 'var(--bg)', borderRadius: 8,
                     border: '1px solid #2e2e35'
                   }}>
-                    <span style={{ fontSize: 13, color: 'var(--text)' }}>#{d.idProducto} — {d.nombreProducto}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text)' }}>#{d.idProducto} - {d.nombreProducto}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--btn-bg)' }}>
                         {d.descuentoPorcentaje}%
@@ -688,7 +688,7 @@ export function PromocionesPage() {
               {viewTarget.esGeneral ? (
                 <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '12px 14px', border: '1px solid #2e2e35', display: 'inline-block' }}>
                   <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 22, fontWeight: 700, color: 'var(--btn-bg)' }}>
-                    {viewTarget.detalle?.[0]?.descuentoPorcentaje ?? '—'}%
+                    {viewTarget.detalle?.[0]?.descuentoPorcentaje ?? '-'}%
                   </span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>sobre todos los productos</span>
                 </div>
@@ -701,7 +701,7 @@ export function PromocionesPage() {
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '8px 12px', background: 'var(--bg)', borderRadius: 8, border: '1px solid #2e2e35',
                     }}>
-                      <span style={{ fontSize: 13, color: 'var(--text)' }}>#{d.idProducto} — {d.nombreProducto}</span>
+                      <span style={{ fontSize: 13, color: 'var(--text)' }}>#{d.idProducto} - {d.nombreProducto}</span>
                       <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--btn-bg)' }}>{d.descuentoPorcentaje}%</span>
                     </div>
                   ))}
