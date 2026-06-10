@@ -5,7 +5,7 @@ import { PromocionesPage } from './pages/Promociones'
 import { CuponesPage } from './pages/Cupones';
 import { PrivateRoute } from './components/PrivateRoute'
 import { PuntosPage } from './pages/Puntos'
-import { ReportesPage } from './pages/Placeholders'
+import { InformesPage } from './pages/Informes'
 import { LoginPage } from './pages/login'
 import { ThemeProvider } from './context/ThemeContext'
 
@@ -21,7 +21,7 @@ export default function App() {
               <Route path="promociones" element={<PrivateRoute><PromocionesPage /></PrivateRoute>} />
               <Route path="cupones"     element={<PrivateRoute><CuponesPage /></PrivateRoute>} />
               <Route path="puntos"      element={<PrivateRoute><PuntosPage /></PrivateRoute>} />
-              <Route path="reportes"    element={<ReportesPage />} /> {/* público */}
+              <Route path="reportes"    element={<PrivateRoute><InformesPage /></PrivateRoute>} />
             </Route>
         </Routes>
       </BrowserRouter>
