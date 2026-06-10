@@ -404,9 +404,8 @@ function TabResumen({
 
 // ─── Tab: Reporte combinado ───────────────────────────────────────────────────
 
-function TabReporte({ saldos, cupones, promociones }: {
+function TabReporte({ saldos, promociones }: {
   saldos: SaldoCliente[]
-  cupones: CuponAPI[]
   promociones: PromocionAPI[]
 }) {
   const [fechaDesde, setFechaDesde] = useState(defaultDesde)
@@ -502,6 +501,22 @@ function TabReporte({ saldos, cupones, promociones }: {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
     .map(([nombre, pts]) => ({ nombre: nombre.split(' ')[0], pts }))
+
+  const facturacionAgrupada: Record<string, { neto: number; descuento: number }> = {}
+  ventas.forEach(v => {
+    const nombre = clienteNombre.get(v.idcliente) ?? `Cliente #${v.idcliente}`
+    if (!facturacionAgrupada[nombre]) facturacionAgrupada[nombre] = { neto: 0, descuento: 0 }
+    facturacionAgrupada[nombre].neto += Number(v.total)
+    facturacionAgrupada[nombre].descuento += Number(v.descuento)
+  })
+  const dataFacturacion = Object.entries(facturacionAgrupada)
+    .sort((a, b) => (b[1].neto + b[1].descuento) - (a[1].neto + a[1].descuento))
+    .slice(0, 10)
+    .map(([nombre, vals]) => ({
+      nombre: nombre.split(' ')[0],
+      neto: Math.round(vals.neto),
+      descuento: Math.round(vals.descuento),
+    }))
 
   const inputStyle: React.CSSProperties = {
     padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)',
@@ -642,70 +657,25 @@ function TabReporte({ saldos, cupones, promociones }: {
             </div>
           )}
 
-          {/* Tabla */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Detalle de ventas en el período</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'DM Mono, monospace' }}>
-                "Descuento aplicado" incluye descuentos por promociones vigentes al momento de la venta
-              </div>
-            </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Cliente', 'N° Venta', 'Fecha', 'Estado', 'Descuento aplicado', 'Puntos otorgados', 'Total'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventas.map((v, i) => {
-                    const nombre = clienteNombre.get(v.idcliente) ?? `Cliente #${v.idcliente}`
-                    const puntos = puntosPorVenta.get(v.idventa)
-                    const descPct = Number(v.subtotal) > 0 ? Math.round((Number(v.descuento) / Number(v.subtotal)) * 100) : 0
-                    return (
-                      <tr key={v.idventa} style={{ borderBottom: i < ventas.length - 1 ? '1px solid var(--border)' : 'none' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                        <td style={{ padding: '11px 16px', color: 'var(--text)', fontWeight: 500, fontSize: 13 }}>{nombre}</td>
-                        <td style={{ padding: '11px 16px', fontFamily: 'DM Mono, monospace', color: 'var(--text-muted)', fontSize: 12 }}>#{v.idventa}</td>
-                        <td style={{ padding: '11px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: 'var(--text)' }}>{formatDate(v.fechaventa)}</td>
-                        <td style={{ padding: '11px 16px' }}>
-                          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)' }}>{v.estado}</span>
-                        </td>
-                        <td style={{ padding: '11px 16px' }}>
-                          {Number(v.descuento) > 0 ? (
-                            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: '#4ade80' }}>
-                              {formatMoney(Number(v.descuento))} <span style={{ fontSize: 10, opacity: 0.7 }}>({descPct}%)</span>
-                            </span>
-                          ) : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>}
-                        </td>
-                        <td style={{ padding: '11px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: puntos ? '#a78bfa' : 'var(--text-muted)', fontSize: 13 }}>
-                          {puntos != null ? puntos.toLocaleString('es-AR') : '—'}
-                        </td>
-                        <td style={{ padding: '11px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: 'var(--text)', fontSize: 13 }}>
-                          {formatMoney(Number(v.total))}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr style={{ borderTop: '2px solid var(--border)', background: 'var(--surface2)' }}>
-                    <td colSpan={4} style={{ padding: '10px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace' }}>
-                      TOTALES · {ventas.length} venta(s) · {cupones.length} cupón(es) activo(s)
-                    </td>
-                    <td style={{ padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#4ade80', fontSize: 13 }}>{formatMoney(totalDescuento)}</td>
-                    <td style={{ padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#a78bfa', fontSize: 13 }}>{totalPuntosEnPeriodo.toLocaleString('es-AR')}</td>
-                    <td style={{ padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: 'var(--text)', fontSize: 13 }}>
-                      {formatMoney(ventas.reduce((s, v) => s + Number(v.total), 0))}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
+          {/* Gráfico: facturación por cliente */}
+          <ChartCard
+            title="Facturación por cliente en el período"
+            sub="Total cobrado (neto) + descuentos aplicados por promociones"
+          >
+            {dataFacturacion.length === 0 ? <EmptyChart msg="Sin datos para graficar" /> : (
+              <ResponsiveContainer key={`fac-${chartKey}`} width="100%" height={Math.max(220, dataFacturacion.length * 38)}>
+                <BarChart data={dataFacturacion} layout="vertical" margin={{ top: 4, right: 40, left: 8, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+                  <YAxis type="category" dataKey="nombre" tick={{ fontSize: 11, fill: '#ccc' }} width={72} />
+                  <Tooltip content={<TooltipCustom />} formatter={(v: number) => formatMoney(v)} />
+                  <Legend formatter={legendStyle} iconSize={10} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                  <Bar dataKey="neto" name="Total cobrado" fill="#fbbf24" radius={[0, 0, 0, 0]} stackId="b" isAnimationActive />
+                  <Bar dataKey="descuento" name="Descuento aplicado" fill="#4ade80" radius={[0, 4, 4, 0]} stackId="b" isAnimationActive />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
         </>
       )}
     </>
@@ -770,7 +740,7 @@ export function InformesPage() {
 
       {tab === 'resumen'
         ? <TabResumen productos={productos} saldos={saldos} cupones={cupones} periodo={periodo} setPeriodo={setPeriodo} />
-        : <TabReporte saldos={saldos} cupones={cupones} promociones={promociones} />
+        : <TabReporte saldos={saldos} promociones={promociones} />
       }
     </div>
   )
