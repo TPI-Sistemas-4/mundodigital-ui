@@ -32,11 +32,6 @@ interface CuponAPI {
 
 const PIE_COLORS = ['#60a5fa', '#4ade80', '#a78bfa', '#fbbf24', '#f87171', '#34d399', '#fb923c', '#e879f9']
 
-const ESTADO_COLOR: Record<EstadoStock, string> = {
-  Disponible:  '#4ade80',
-  Critico:     '#fbbf24',
-  'Sin Stock': '#f87171',
-}
 
 const DESCUENTO_COLOR: Record<number, string> = {
   30: '#f87171',
@@ -174,10 +169,21 @@ export function InformesPage() {
     .sort((a, b) => b[1] - a[1])
     .map(([name, value]) => ({ name, value }))
 
-  // Gráfico 4: estado del stock
-  const porEstado: Record<EstadoStock, number> = { Disponible: 0, Critico: 0, 'Sin Stock': 0 }
-  productos.forEach(p => porEstado[p.estadoStock]++)
-  const dataEstado = (Object.entries(porEstado) as [EstadoStock, number][]).map(([name, value]) => ({ name, value }))
+  // Gráfico 4: distribución de oportunidades de descuento (marketing)
+  const nivelCount: Record<string, number> = {}
+  const todosConCalculo = productos.map(p => ({ ...p, descuento: sugerirDescuento(p) }))
+  todosConCalculo.forEach(p => {
+    const key = p.descuento ? `${p.descuento}% off` : 'Sin necesidad'
+    nivelCount[key] = (nivelCount[key] ?? 0) + 1
+  })
+  const nivelOrder = ['30% off', '25% off', '20% off', '15% off', '10% off', 'Sin necesidad']
+  const dataOportunidades = nivelOrder
+    .filter(k => nivelCount[k] > 0)
+    .map(k => ({
+      name: k,
+      value: nivelCount[k],
+      color: k === 'Sin necesidad' ? '#4b5563' : DESCUENTO_COLOR[parseInt(k)] ?? '#4ade80',
+    }))
 
   // Stats resumen
   const totalPuntos = saldos.reduce((s, c) => s + c.saldo, 0)
@@ -282,15 +288,15 @@ export function InformesPage() {
             )}
         </ChartCard>
 
-        {/* Gráfico 4 — Estado del stock */}
+        {/* Gráfico 4 — Oportunidades de descuento */}
         <ChartCard
-          title="Estado actual del stock"
-          sub={`${productos.length} productos en catálogo`}
+          title="Oportunidades de descuento detectadas"
+          sub="Cuántos productos requieren cada nivel de incentivo para activar ventas"
         >
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie
-                data={dataEstado}
+                data={dataOportunidades}
                 cx="50%" cy="42%"
                 innerRadius={52} outerRadius={82}
                 paddingAngle={3}
@@ -300,7 +306,7 @@ export function InformesPage() {
                 label={({ percent }) => percent > 0.05 ? `${Math.round(percent * 100)}%` : ''}
                 labelLine={{ stroke: 'rgba(255,255,255,0.2)' }}
               >
-                {dataEstado.map(e => <Cell key={e.name} fill={ESTADO_COLOR[e.name as EstadoStock]} />)}
+                {dataOportunidades.map(e => <Cell key={e.name} fill={e.color} />)}
               </Pie>
               <Tooltip content={<TooltipCustom />} />
               <Legend formatter={legendStyle} iconSize={10} wrapperStyle={{ fontSize: 11, paddingTop: 4 }} />
